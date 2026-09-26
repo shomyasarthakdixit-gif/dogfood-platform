@@ -1,7 +1,11 @@
 import { query } from '@/lib/db';
 import { Team, TeamMember, User } from '@/lib/types';
+import { mockTeams } from './mockData';
+
+const USE_MOCK = true;
 
 export async function getTeamById(teamId: string): Promise<Team | null> {
+  if (USE_MOCK) return mockTeams.find(t => t.id === teamId) || mockTeams[0];
   const result = await query(
     `SELECT id, event_id, name, description, created_at FROM teams WHERE id = $1`,
     [teamId]
@@ -13,6 +17,7 @@ export async function getTeamById(teamId: string): Promise<Team | null> {
 }
 
 export async function getTeamMembers(teamId: string): Promise<TeamMember[]> {
+  if (USE_MOCK) return mockTeams[0].members ?? [];
   const result = await query(
     `SELECT tm.id, tm.team_id, tm.user_id, tm.role, tm.created_at,
             u.id as u_id, u.name as u_name, u.email as u_email, u.role as u_role, u.created_at as u_created_at
@@ -70,6 +75,7 @@ export async function getTeamByUserAndEvent(
   userId: string,
   eventId: string
 ): Promise<Team | null> {
+  if (USE_MOCK) return mockTeams[0];
   const result = await query(
     `SELECT t.id, t.event_id, t.name, t.description, t.created_at
      FROM teams t

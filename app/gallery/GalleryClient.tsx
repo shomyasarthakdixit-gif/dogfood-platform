@@ -9,10 +9,34 @@ interface GalleryClientProps {
   projects: Submission[];
 }
 
+function getImageForId(id: string) {
+  const customImages: Record<string, string> = {
+    'sub-1': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+    'ecolink': 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80',
+    'healthsphere': 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=600&q=80',
+    'chainguard': 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
+    'quantumsim': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80',
+  };
+  
+  if (customImages[id]) return customImages[id];
+
+  const fallback = [
+    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80',
+    'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80',
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  return fallback[Math.abs(hash) % fallback.length];
+}
+
 function ProjectCard({ project }: { project: Submission }) {
   const teamName = project.team?.name ?? 'Unknown team';
   return (
     <article className={styles.card}>
+      <div 
+        className={styles.cardCover} 
+        style={{ backgroundImage: `url('${getImageForId(project.id)}')` }} 
+      />
       <div className={styles.cardBody}>
         <div className={styles.cardHeader}>
           <h2 className={styles.projectTitle}>

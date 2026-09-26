@@ -1,7 +1,11 @@
 import { query } from '@/lib/db';
 import { Event, Track, Prize } from '@/lib/types';
+import { mockEvents } from './mockData';
+
+const USE_MOCK = true; // Temporary override for UI preview
 
 export async function getEvents(): Promise<Event[]> {
+  if (USE_MOCK) return mockEvents;
   const result = await query(`
     SELECT id, slug, name, description, start_date, end_date, created_at
     FROM events
@@ -11,6 +15,7 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function getEventById(id: string): Promise<Event | null> {
+  if (USE_MOCK) return mockEvents.find(e => e.id === id) || mockEvents[0];
   const result = await query(
     `SELECT id, slug, name, description, start_date, end_date, created_at FROM events WHERE id = $1`,
     [id]
@@ -25,6 +30,7 @@ export async function getEventById(id: string): Promise<Event | null> {
 }
 
 export async function getEventBySlug(slug: string): Promise<Event | null> {
+  if (USE_MOCK) return mockEvents.find(e => e.slug === slug) || mockEvents[0];
   const result = await query(
     `SELECT id, slug, name, description, start_date, end_date, created_at FROM events WHERE slug = $1`,
     [slug]
@@ -34,6 +40,7 @@ export async function getEventBySlug(slug: string): Promise<Event | null> {
 }
 
 export async function getEventTracks(eventId: string): Promise<Track[]> {
+  if (USE_MOCK) return mockEvents[0].tracks ?? [];
   const result = await query(
     `SELECT id, event_id, name, description, created_at FROM tracks WHERE event_id = $1 ORDER BY created_at ASC`,
     [eventId]
@@ -42,6 +49,7 @@ export async function getEventTracks(eventId: string): Promise<Track[]> {
 }
 
 export async function getEventPrizes(eventId: string): Promise<Prize[]> {
+  if (USE_MOCK) return mockEvents[0].prizes ?? [];
   const result = await query(
     `SELECT id, event_id, track_id, name, description, amount, created_at FROM prizes WHERE event_id = $1 ORDER BY created_at ASC`,
     [eventId]

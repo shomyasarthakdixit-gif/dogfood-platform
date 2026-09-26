@@ -1,13 +1,13 @@
 .container {
-  max-width: var(--max-width);
+  max-width: 100%;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-8);
   flex: 1;
 }
 
 .sm { max-width: 640px; }
 .md { max-width: 768px; }
-.lg { max-width: var(--max-width); }
+.lg { max-width: 100%; }
 
 @media (max-width: 768px) {
   .container { padding: var(--space-6) var(--space-4); }

@@ -1,7 +1,11 @@
 import { query } from '@/lib/db';
 import { Submission } from '@/lib/types';
+import { mockSubmissions } from './mockData';
+
+const USE_MOCK = true;
 
 export async function getSubmissionsByEvent(eventId: string): Promise<Submission[]> {
+  if (USE_MOCK) return mockSubmissions.filter(s => s.event_id === eventId);
   const result = await query(
     `SELECT s.id, s.team_id, s.event_id, s.title, s.description, s.url, s.status, s.created_at,
             t.name as team_name
@@ -15,6 +19,7 @@ export async function getSubmissionsByEvent(eventId: string): Promise<Submission
 }
 
 export async function getSubmissionById(id: string): Promise<Submission | null> {
+  if (USE_MOCK) return mockSubmissions.find(s => s.id === id) || null;
   const result = await query(
     `SELECT s.id, s.team_id, s.event_id, s.title, s.description, s.url, s.status, s.created_at,
             t.name as team_name, t.description as team_description
@@ -28,6 +33,7 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
 }
 
 export async function getSubmissionByTeam(teamId: string, eventId: string): Promise<Submission | null> {
+  if (USE_MOCK) return mockSubmissions.find(s => s.team_id === teamId && s.event_id === eventId) || null;
   const result = await query(
     `SELECT s.id, s.team_id, s.event_id, s.title, s.description, s.url, s.status, s.created_at
      FROM submissions s WHERE s.team_id = $1 AND s.event_id = $2 LIMIT 1`,

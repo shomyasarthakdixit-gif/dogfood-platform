@@ -75,18 +75,18 @@ function EventTimeline({ event }: { event: Event }) {
 
 function TrackCard({ track }: { track: Track }) {
   return (
-    <Card shadow className={styles.trackCard}>
+    <div className={styles.trackCard}>
       <h3 className={styles.trackName}>{track.name}</h3>
       {track.description && (
         <p className={styles.trackDescription}>{track.description}</p>
       )}
-    </Card>
+    </div>
   );
 }
 
 function PrizeCard({ prize }: { prize: Prize }) {
   return (
-    <Card className={styles.prizeCard}>
+    <div className={styles.prizeCard}>
       <div className={styles.prizeHeader}>
         <svg
           width="20"
@@ -108,7 +108,7 @@ function PrizeCard({ prize }: { prize: Prize }) {
       {prize.description && (
         <p className={styles.prizeDescription}>{prize.description}</p>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -149,12 +149,32 @@ function StatusBanner({ event }: { event: Event }) {
   );
 }
 
+function getImageForEventId(id: string) {
+  const customImages: Record<string, string> = {
+    'evt-1': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+    'evt-2': 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80',
+    'evt-3': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=1200&q=80',
+    'evt-4': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+  };
+  return customImages[id] || customImages['evt-1'];
+}
+
 async function EventDetail({ eventId }: { eventId: string }) {
   const event = await getEventById(eventId);
   if (!event) notFound();
 
   return (
     <article>
+      {/* Cover Image */}
+      <div className={styles.coverWrapper}>
+        <img 
+          src={getImageForEventId(eventId)} 
+          alt={event.name} 
+          className={styles.coverImage} 
+        />
+        <div className={styles.coverOverlay} aria-hidden="true" />
+      </div>
+
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerMeta}>
@@ -243,25 +263,25 @@ async function EventDetail({ eventId }: { eventId: string }) {
 
         {/* Sidebar: Timeline */}
         <aside className={styles.sidebar}>
-          <Card shadow padding="md">
+          <div className={[styles.sidebarCard, styles.timelineCard].join(' ')}>
             <h2 className={styles.sidebarTitle}>Timeline</h2>
             <EventTimeline event={event} />
-          </Card>
+          </div>
 
-          <Card padding="md" className={styles.linksCard}>
+          <div className={[styles.sidebarCard, styles.linksCard].join(' ')}>
             <h2 className={styles.sidebarTitle}>Quick actions</h2>
             <div className={styles.quickLinks}>
-              <Button as="a" href="/dashboard" variant="secondary" fullWidth size="sm">
+              <Button as="a" href="/dashboard" variant="secondary" fullWidth size="md">
                 My Dashboard
               </Button>
-              <Button as="a" href="/gallery" variant="secondary" fullWidth size="sm">
+              <Button as="a" href="/gallery" variant="secondary" fullWidth size="md">
                 Project Gallery
               </Button>
-              <Button as="a" href="/submissions/new" variant="ghost" fullWidth size="sm">
+              <Button as="a" href="/submissions/new" variant="primary" fullWidth size="md">
                 Submit a project
               </Button>
             </div>
-          </Card>
+          </div>
         </aside>
       </div>
     </article>

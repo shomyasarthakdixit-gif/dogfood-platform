@@ -12,6 +12,16 @@ import styles from './events.module.css';
 
 export const metadata: Metadata = { title: 'Events — Dogfood 2026' };
 
+function getImageForEventId(id: string) {
+  const customImages: Record<string, string> = {
+    'evt-1': 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80', // coding
+    'evt-2': 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=600&q=80', // green city
+    'evt-3': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=600&q=80', // AI/Tech
+    'evt-4': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80', // Legacy
+  };
+  return customImages[id] || customImages['evt-1'];
+}
+
 function eventStatusVariant(status: Event['status']): 'success' | 'info' | 'default' {
   if (status === 'OPEN') return 'success';
   if (status === 'UPCOMING') return 'info';
@@ -25,46 +35,32 @@ function EventCard({ event }: { event: Event }) {
     d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
-    <Card shadow hover className={styles.eventCard}>
-      <div className={styles.eventCardHeader}>
-        <div>
-          <h2 className={styles.eventName}>{event.name}</h2>
-          {event.description && (
-            <p className={styles.eventDescription}>{event.description}</p>
-          )}
-        </div>
-        <Badge
-          variant={eventStatusVariant(event.status)}
-          dot
-        >
-          {event.status === 'OPEN'
-            ? 'Open'
-            : event.status === 'UPCOMING'
-            ? 'Upcoming'
-            : 'Closed'}
-        </Badge>
-      </div>
-
-      <div className={styles.eventMeta}>
-        <span className={styles.metaItem}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
+    <Card shadow={false} className={styles.eventCard}>
+      <div 
+        className={styles.eventCover} 
+        style={{ backgroundImage: `url('${getImageForEventId(event.id)}')` }} 
+      />
+      <div className={styles.eventContent}>
+        <div className={styles.eventCardHeader}>
+          <div>
+            <h2 className={styles.eventName}>{event.name}</h2>
+            {event.description && (
+              <p className={styles.eventDescription}>{event.description}</p>
+            )}
+          </div>
+          <Badge
+            variant={eventStatusVariant(event.status)}
+            dot
           >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          {fmt(start)} &ndash; {fmt(end)}
-        </span>
+            {event.status === 'OPEN'
+              ? 'Open'
+              : event.status === 'UPCOMING'
+              ? 'Upcoming'
+              : 'Closed'}
+          </Badge>
+        </div>
 
-        {event.tracks && event.tracks.length > 0 && (
+        <div className={styles.eventMeta}>
           <span className={styles.metaItem}>
             <svg
               width="14"
@@ -75,32 +71,53 @@ function EventCard({ event }: { event: Event }) {
               strokeWidth="2"
               aria-hidden="true"
             >
-              <path d="M4 6h16M4 10h16M4 14h8" />
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-            {event.tracks.length} track{event.tracks.length !== 1 ? 's' : ''}
+            {fmt(start)} &ndash; {fmt(end)}
           </span>
-        )}
-      </div>
 
-      {event.tracks && event.tracks.length > 0 && (
-        <div className={styles.trackList}>
-          {event.tracks.map(t => (
-            <span key={t.id} className={styles.trackPill}>
-              {t.name}
+          {event.tracks && event.tracks.length > 0 && (
+            <span className={styles.metaItem}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M4 6h16M4 10h16M4 14h8" />
+              </svg>
+              {event.tracks.length} track{event.tracks.length !== 1 ? 's' : ''}
             </span>
-          ))}
+          )}
         </div>
-      )}
 
-      <div className={styles.eventCardFooter}>
-        <Button
-          as="a"
-          href={`/events/${event.id}`}
-          variant={event.status === 'OPEN' ? 'primary' : 'secondary'}
-          size="sm"
-        >
-          {event.status === 'OPEN' ? 'View event →' : 'View details →'}
-        </Button>
+        {event.tracks && event.tracks.length > 0 && (
+          <div className={styles.trackList}>
+            {event.tracks.map(t => (
+              <span key={t.id} className={styles.trackPill}>
+                {t.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className={styles.eventCardFooter}>
+          <Button
+            as="a"
+            href={`/events/${event.id}`}
+            variant={event.status === 'OPEN' ? 'primary' : 'secondary'}
+            size="sm"
+            fullWidth
+          >
+            {event.status === 'OPEN' ? 'View event →' : 'View details →'}
+          </Button>
+        </div>
       </div>
     </Card>
   );

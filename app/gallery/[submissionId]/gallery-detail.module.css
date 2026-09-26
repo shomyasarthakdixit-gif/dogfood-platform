@@ -1,14 +1,42 @@
+.coverWrapper {
+  width: 100%;
+  height: 240px;
+  border-radius: var(--radius-2xl, 24px);
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+  background: #1e293b;
+  position: relative;
+  box-shadow: var(--shadow-md);
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  animation: fadeSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.coverOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-2);
+  position: relative;
+  z-index: 10;
 }
 
 .breadcrumbLink {
-  color: var(--color-accent);
+  color: #3b82f6;
+  font-weight: 500;
   text-decoration: none;
   transition: opacity var(--transition-base);
 }
@@ -16,7 +44,8 @@
 .breadcrumbLink:hover { opacity: 0.8; }
 
 .breadcrumbCurrent {
-  color: var(--color-text-muted);
+  color: var(--color-text);
+  font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -30,65 +59,77 @@
   gap: var(--space-4);
   padding-bottom: var(--space-6);
   border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-4);
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
 .title {
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
+  font-size: 3rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--color-text);
-  margin-bottom: var(--space-2);
+  background: linear-gradient(135deg, #0f172a 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  line-height: 1.1;
 }
 
 .subtitle {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   color: var(--color-text-muted);
 }
 
 .headerActions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-shrink: 0;
   flex-wrap: wrap;
 }
 
 .body {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: var(--space-8);
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-10);
   align-items: start;
+  animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: 0.1s;
 }
 
 .mainColumn {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-6);
   position: sticky;
-  top: calc(var(--nav-height) + var(--space-4));
+  top: calc(var(--nav-height) + var(--space-6));
 }
 
 .cardSection {
-  padding: var(--space-6);
+  padding: var(--space-8);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .sectionTitle {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
+  font-size: 1.25rem;
+  font-weight: 700;
   color: var(--color-text);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
+  letter-spacing: -0.01em;
 }
 
 .descriptionText {
-  font-size: var(--text-base);
+  font-size: 1.1rem;
   color: var(--color-text);
-  line-height: var(--leading-relaxed);
+  line-height: 1.7;
   white-space: pre-wrap;
 }
 
@@ -96,18 +137,25 @@
 .memberList {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .memberItem {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-inset);
+  transition: background 0.2s;
+}
+.memberItem:hover {
+  background: var(--color-surface-subtle);
 }
 
 .memberName {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-size: var(--text-base);
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -117,12 +165,12 @@
 
 /* Sidebar */
 .sidebarTitle {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
+  font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: var(--space-3);
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-4);
 }
 
 /* Voting placeholder */
@@ -135,41 +183,50 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-6) 0;
+  gap: var(--space-3);
+  padding: var(--space-8) 0;
   text-align: center;
 }
 
 .votingPlaceholderText {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
+  color: #64748b;
 }
 
-/* Team card */
+/* Sidebar cards styling */
+.sidebarCard {
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
 .teamCard {
-  background: var(--color-surface-subtle);
+  background: linear-gradient(to bottom, #eff6ff, #ffffff);
+  border-color: #bfdbfe;
 }
 
 .teamName {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text);
-  margin-bottom: var(--space-1);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: var(--space-2);
 }
 
 .teamDesc {
   font-size: var(--text-sm);
-  color: var(--color-text-muted);
-  line-height: var(--leading-relaxed);
+  color: #475569;
+  line-height: 1.6;
 }
 
 .metaCard {
-  background: var(--color-surface-subtle);
+  background: var(--color-surface);
 }
 
 .metaDate {
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
+  font-size: var(--text-lg);
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -177,9 +234,11 @@
   .body { grid-template-columns: 1fr; }
   .sidebar { position: static; }
   .header { flex-direction: column; }
+  .coverWrapper { height: 30vh; }
 }
 
 @media (max-width: 640px) {
-  .title { font-size: var(--text-2xl); }
+  .title { font-size: 2rem; }
   .breadcrumbCurrent { max-width: 150px; }
+  .cardSection { padding: var(--space-5); }
 }

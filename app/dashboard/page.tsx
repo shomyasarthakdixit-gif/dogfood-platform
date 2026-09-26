@@ -99,54 +99,57 @@ async function EventSummary() {
     d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <Card shadow className={styles.eventSummaryCard}>
-      <div className={styles.eventSummaryHeader}>
-        <h2 className={styles.eventSummaryTitle}>
-          <a href={`/events/${featuredEvent.id}`} className={styles.eventSummaryLink}>
-            {featuredEvent.name}
-          </a>
-        </h2>
-        <Badge
-          variant={
-            featuredEvent.status === 'OPEN'
-              ? 'success'
+    <Card shadow={false} className={styles.eventSummaryCard}>
+      <div className={styles.eventCover} aria-hidden="true" />
+      <div className={styles.eventSummaryContent}>
+        <div className={styles.eventSummaryHeader}>
+          <h2 className={styles.eventSummaryTitle}>
+            <a href={`/events/${featuredEvent.id}`} className={styles.eventSummaryLink}>
+              {featuredEvent.name}
+            </a>
+          </h2>
+          <Badge
+            variant={
+              featuredEvent.status === 'OPEN'
+                ? 'success'
+                : featuredEvent.status === 'UPCOMING'
+                ? 'info'
+                : 'default'
+            }
+            dot
+          >
+            {featuredEvent.status === 'OPEN'
+              ? 'Open'
               : featuredEvent.status === 'UPCOMING'
-              ? 'info'
-              : 'default'
-          }
-          dot
-        >
-          {featuredEvent.status === 'OPEN'
-            ? 'Open'
-            : featuredEvent.status === 'UPCOMING'
-            ? 'Upcoming'
-            : 'Closed'}
-        </Badge>
+              ? 'Upcoming'
+              : 'Closed'}
+          </Badge>
+        </div>
+
+        {featuredEvent.description && (
+          <p className={styles.eventSummaryDesc}>{featuredEvent.description}</p>
+        )}
+
+        <div className={styles.eventSummaryDates}>
+          <div className={styles.dateBlock}>
+            <span className={styles.dateLabel}>Starts</span>
+            <span className={styles.dateValue}>{fmt(start)}</span>
+          </div>
+          <div className={styles.dateDivider} aria-hidden="true">→</div>
+          <div className={styles.dateBlock}>
+            <span className={styles.dateLabel}>Ends</span>
+            <span className={styles.dateValue}>{fmt(end)}</span>
+          </div>
+        </div>
+
+        {featuredEvent.tracks && featuredEvent.tracks.length > 0 && (
+          <div className={styles.trackList}>
+            {featuredEvent.tracks.map(t => (
+              <span key={t.id} className={styles.trackPill}>{t.name}</span>
+            ))}
+          </div>
+        )}
       </div>
-
-      {featuredEvent.description && (
-        <p className={styles.eventSummaryDesc}>{featuredEvent.description}</p>
-      )}
-
-      <div className={styles.eventSummaryDates}>
-        <div className={styles.dateBlock}>
-          <span className={styles.dateLabel}>Starts</span>
-          <span className={styles.dateValue}>{fmt(start)}</span>
-        </div>
-        <div className={styles.dateDivider} aria-hidden="true">→</div>
-        <div className={styles.dateBlock}>
-          <span className={styles.dateLabel}>Ends</span>
-          <span className={styles.dateValue}>{fmt(end)}</span>
-        </div>
-      </div>
-
-      {featuredEvent.tracks && featuredEvent.tracks.length > 0 && (
-        <div className={styles.trackList}>
-          {featuredEvent.tracks.map(t => (
-            <span key={t.id} className={styles.trackPill}>{t.name}</span>
-          ))}
-        </div>
-      )}
     </Card>
   );
 }

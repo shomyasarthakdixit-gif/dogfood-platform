@@ -59,6 +59,26 @@ function VotingPlaceholder({ submissionId }: { submissionId: string }) {
   );
 }
 
+function getImageForId(id: string) {
+  const customImages: Record<string, string> = {
+    'sub-1': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80',
+    'ecolink': 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=1200&q=80',
+    'healthsphere': 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
+    'chainguard': 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+    'quantumsim': 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80',
+  };
+  
+  if (customImages[id]) return customImages[id];
+
+  const fallback = [
+    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=1200&q=80',
+  ];
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) hash = ((hash << 5) - hash + id.charCodeAt(i)) | 0;
+  return fallback[Math.abs(hash) % fallback.length];
+}
+
 async function GalleryDetailContent({ submissionId }: { submissionId: string }) {
   const submission = await getSubmissionById(submissionId);
   if (!submission || submission.status !== 'SUBMITTED') notFound();
@@ -72,6 +92,16 @@ async function GalleryDetailContent({ submissionId }: { submissionId: string }) 
 
   return (
     <article>
+      {/* Cover Image */}
+      <div className={styles.coverWrapper}>
+        <img 
+          src={getImageForId(submissionId)} 
+          alt={submission.title} 
+          className={styles.coverImage} 
+        />
+        <div className={styles.coverOverlay} aria-hidden="true" />
+      </div>
+
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className={styles.breadcrumb}>
         <a href="/gallery" className={styles.breadcrumbLink}>Gallery</a>
@@ -116,65 +146,61 @@ async function GalleryDetailContent({ submissionId }: { submissionId: string }) 
         <div className={styles.mainColumn}>
           {/* Description */}
           {submission.description && (
-            <Card shadow>
-              <div className={styles.cardSection}>
-                <h2 className={styles.sectionTitle}>About</h2>
-                <p className={styles.descriptionText}>{submission.description}</p>
-              </div>
-            </Card>
+            <div className={styles.cardSection}>
+              <h2 className={styles.sectionTitle}>About</h2>
+              <p className={styles.descriptionText}>{submission.description}</p>
+            </div>
           )}
 
           {/* Team members — only names, no emails for public view */}
           {members.length > 0 && (
-            <Card shadow>
-              <div className={styles.cardSection}>
-                <h2 className={styles.sectionTitle}>Team Members</h2>
-                <div className={styles.memberList}>
-                  {members.map(m => (
-                    <div key={m.id} className={styles.memberItem}>
-                      <Avatar name={m.user?.name ?? 'Unknown'} size="sm" />
-                      <div>
-                        <span className={styles.memberName}>
-                          {m.user?.name ?? 'Unknown'}
-                        </span>
-                        {m.role === 'LEADER' && (
-                          <Badge variant="info" className={styles.roleBadge}>
-                            Leader
-                          </Badge>
-                        )}
-                      </div>
+            <div className={styles.cardSection}>
+              <h2 className={styles.sectionTitle}>Team Members</h2>
+              <div className={styles.memberList}>
+                {members.map(m => (
+                  <div key={m.id} className={styles.memberItem}>
+                    <Avatar name={m.user?.name ?? 'Unknown'} size="sm" />
+                    <div>
+                      <span className={styles.memberName}>
+                        {m.user?.name ?? 'Unknown'}
+                      </span>
+                      {m.role === 'LEADER' && (
+                        <Badge variant="info" className={styles.roleBadge}>
+                          Leader
+                        </Badge>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            </Card>
+            </div>
           )}
         </div>
 
         <aside className={styles.sidebar}>
           {/* Voting integration point */}
-          <Card shadow padding="md">
+          <div className={styles.sidebarCard}>
             <VotingPlaceholder submissionId={submissionId} />
-          </Card>
+          </div>
 
           {/* Team info */}
           {submission.team && (
-            <Card padding="md" className={styles.teamCard}>
+            <div className={[styles.sidebarCard, styles.teamCard].join(' ')}>
               <h2 className={styles.sidebarTitle}>Team</h2>
               <div className={styles.teamName}>{submission.team.name}</div>
               {submission.team.description && (
                 <p className={styles.teamDesc}>{submission.team.description}</p>
               )}
-            </Card>
+            </div>
           )}
 
           {/* Submission date */}
-          <Card padding="md" className={styles.metaCard}>
+          <div className={[styles.sidebarCard, styles.metaCard].join(' ')}>
             <h2 className={styles.sidebarTitle}>Submitted</h2>
             <time className={styles.metaDate} dateTime={submission.created_at}>
               {fmt(submitted)}
             </time>
-          </Card>
+          </div>
         </aside>
       </div>
     </article>
