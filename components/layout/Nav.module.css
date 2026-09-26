@@ -1,0 +1,102 @@
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-height);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  backdrop-filter: blur(8px);
+}
+
+.inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.brand {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.brand span { color: var(--color-accent); }
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  transition: color var(--transition-base), background var(--transition-base);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--color-text);
+  background: var(--color-surface-subtle);
+}
+
+.linkActive {
+  color: var(--color-text);
+  background: var(--color-surface-inset);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+.menuBtn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+}
+
+.mobileMenu {
+  display: none;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) var(--space-6);
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.mobileLink {
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--color-text-muted);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  display: block;
+}
+
+.mobileLink:hover { background: var(--color-surface-subtle); color: var(--color-text); }
+
+@media (max-width: 768px) {
+  .links { display: none; }
+  .menuBtn { display: flex; align-items: center; }
+  .mobileMenu { display: flex; }
+  .inner { gap: var(--space-4); }
+}
