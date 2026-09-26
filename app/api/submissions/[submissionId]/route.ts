@@ -40,6 +40,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ submis
     const result = submissionUpdateSchema.safeParse(body);
     if (!result.success) return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: result.error.issues[0].message } }, { status: 400 });
 
+    if (result.data.track_id) {
+      const trackRes = await pool.query('SELECT id FROM tracks WHERE id = $1 AND event_id = $2', [result.data.track_id, sub.event_id]);
+      if (trackRes.rowCount === 0) return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid track' } }, { status: 400 });
+    }
+
     const updates = Object.entries(result.data).map(([k, _v], i) => `${k} = $${i+2}`);
     if (updates.length === 0) return NextResponse.json({ status: 'ok' });
 

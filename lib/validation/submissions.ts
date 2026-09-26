@@ -4,6 +4,7 @@ export const submissionSchema = z.object({
   title: z.string().min(2),
   description: z.string().optional(),
   url: z.string().url().optional().nullable(),
+  track_id: z.string().uuid().optional().nullable(),
 });
 
 export const submissionUpdateSchema = submissionSchema.partial();

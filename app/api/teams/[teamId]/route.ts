@@ -31,7 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ teamId
     return NextResponse.json({ team: res.rows[0] });
   } catch (err: unknown) {
     console.error(err);
-    if (err && typeof err === 'object' && 'code' in err && (err as any).code === '23505') {
+    if (err && typeof err === 'object' && 'code' in err && (err as {code: string}).code === '23505') {
       return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Team name already exists' } }, { status: 400 });
     }
     return NextResponse.json({ error: { code: 'SERVER_ERROR', message: 'Internal error' } }, { status: 500 });

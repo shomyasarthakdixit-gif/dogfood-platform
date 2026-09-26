@@ -39,14 +39,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
 
     const teamId = teamRes.rows[0].id;
 
+    if (result.data.track_id) {
+      const trackRes = await pool.query('SELECT id FROM tracks WHERE id = $1 AND event_id = $2', [result.data.track_id, eventId]);
+      if (trackRes.rowCount === 0) {
+        return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Track not found or does not belong to this event' } }, { status: 400 });
+      }
+    }
+
     const insertRes = await pool.query(`
-      INSERT INTO submissions (team_id, event_id, title, description, url, status)
-      VALUES ($1, $2, $3, $4, $5, 'DRAFT') RETURNING *
-    `, [teamId, eventId, result.data.title, result.data.description, result.data.url]);
+      INSERT INTO submissions (team_id, event_id, title, description, url, track_id, status)
+      VALUES ($1, $2, $3, $4, $5, $6, 'DRAFT') RETURNING *
+    `, [teamId, eventId, result.data.title, result.data.description, result.data.url, result.data.track_id]);
 
     return NextResponse.json({ submission: insertRes.rows[0] });
   } catch (err: unknown) {
-    if (err && typeof err === 'object' && 'code' in err && (err as any).code === '23505') {
+    if (err && typeof err === 'object' && 'code' in err && (err as {code: string}).code === '23505') {
       return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Team already has a submission' } }, { status: 400 });
     }
     console.error(err);

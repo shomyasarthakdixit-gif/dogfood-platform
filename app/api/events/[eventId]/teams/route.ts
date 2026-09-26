@@ -49,7 +49,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
       return NextResponse.json({ team });
     } catch (e: unknown) {
       await client.query('ROLLBACK');
-      if (e && typeof e === 'object' && 'code' in e && (e as any).code === '23505') {
+      if (e && typeof e === 'object' && 'code' in e && (e as {code: string}).code === '23505') {
         return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Team name already exists in this event' } }, { status: 400 });
       }
       throw e;
