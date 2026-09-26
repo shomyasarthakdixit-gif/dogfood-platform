@@ -135,6 +135,56 @@ export async function requireEventRole(eventId: string, requiredRole: 'ORGANIZER
   return { user, eventRole: userEventRole, error: null };
 }
 
+export async function requireEventAdmin(eventId: string) {
+  const { user, error } = await requireUser();
+  if (error) return { user: null, error };
+  if (user.role === 'ADMIN') return { user, error: null };
+  
+  const pool = getDbPool();
+  const res = await pool.query('SELECT role FROM event_members WHERE event_id = $1 AND user_id = $2', [eventId, user.id]);
+  if (res.rowCount && res.rows[0].role === 'ORGANIZER') {
+    return { user, error: null };
+  }
+  return { user: null, error: authErrorResponse('FORBIDDEN', 'Access denied.') };
+}
+
+export async function requireTeamLeader(teamId: string) {
+  const { user, error } = await requireUser();
+  if (error) return { user: null, teamEventId: null, error };
+
+  const pool = getDbPool();
+  const res = await pool.query(`
+    SELECT tm.role, t.event_id 
+    FROM team_members tm
+    JOIN teams t ON tm.team_id = t.id
+    WHERE tm.team_id = $1 AND tm.user_id = $2
+  `, [teamId, user.id]);
+
+  if (res.rowCount === 0 || res.rows[0].role !== 'LEADER') {
+    return { user: null, teamEventId: null, error: authErrorResponse('FORBIDDEN', 'Access denied. Must be team leader.') };
+  }
+
+  return { user, teamEventId: res.rows[0].event_id, error: null };
+}
+
+export async function requireTeamMember(teamId: string) {
+  const { user, error } = await requireUser();
+  if (error) return { user: null, teamEventId: null, error };
+  
+  const pool = getDbPool();
+  const res = await pool.query(`
+    SELECT t.event_id 
+    FROM team_members tm
+    JOIN teams t ON tm.team_id = t.id
+    WHERE tm.team_id = $1 AND tm.user_id = $2
+  `, [teamId, user.id]);
+
+  if (res.rowCount === 0) {
+    return { user: null, teamEventId: null, error: authErrorResponse('FORBIDDEN', 'Access denied.') };
+  }
+  return { user, teamEventId: res.rows[0].event_id, error: null };
+}
+
 export async function cleanupExpiredSessions() {
   const pool = getDbPool();
   await pool.query('DELETE FROM sessions WHERE expires_at < NOW()');
