@@ -48,6 +48,8 @@ $$ FinalScore = 50 + (15 \times \text{AvgZScore}) $$
 
 ### Conclusion
 By relying on Z-score normalization:
-1. **Mean Shift Bias** (harsh judges who average 40 vs lenient who average 80) is completely neutralized.
-2. **Variance Bias** (judges who score everything 70-80 vs judges who use 20-100) is neutralized.
-Teams are ranked purely on how much better or worse they were compared to the *other* submissions reviewed by the *same* judges.
+1. **Mean Shift Bias** (harsh judges who average 40 vs lenient who average 80) is mathematically mitigated.
+2. **Variance Bias** (judges who score everything 70-80 vs judges who use 20-100) is reduced.
+Teams are ranked on how much better or worse they were compared to the *other* submissions reviewed by the *same* judges, reducing the impact of individual judge leniency or harshness. However, this normalization requires a sufficient sample size of evaluations per judge to be statistically robust.
+
+*Note: The normalization logic and its mathematical correctness are verified by automated proofs located in `tests/integration/judging.test.ts`.*
