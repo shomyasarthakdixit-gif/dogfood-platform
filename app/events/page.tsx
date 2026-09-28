@@ -76,7 +76,7 @@ export default function EventsPage() {
         {/* Testimonial Section */}
         <section className={styles.testimonialSection}>
           <div className={styles.testimonialInner}>
-            <div className={styles.quoteIcon}>"</div>
+            <div className={styles.quoteIcon}>&quot;</div>
             <p className={styles.testimonialText}>
               Dogfood 2025 helped me land my dream job! The community and the projects we built were world-class.
             </p>
@@ -106,7 +106,7 @@ async function EventsList() {
     <div className={styles.grid}>
       {displayEvents.map((evt, i) => {
         const isFlagship = i === 0;
-        const daysUntil = Math.max(1, Math.floor(Math.random() * 15));
+        const daysUntil = Math.max(1, ((i * 7 + 3) % 15) + 1);
 
         return (
           <Card key={evt.id} hover padding="sm" className={styles.card}>
