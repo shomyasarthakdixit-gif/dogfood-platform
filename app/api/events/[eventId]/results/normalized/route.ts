@@ -1,15 +1,29 @@
 import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
-import { requireEventAdmin } from '@/lib/auth';
+import { getCurrentUser } from '@/lib/auth';
 import { calculateNormalizedResults } from '@/lib/judging/normalization';
 
 export async function GET(req: Request, { params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await params;
   
-  const { error } = await requireEventAdmin(eventId);
-  if (error) return error;
-
   const pool = getDbPool();
+  const evRes = await pool.query('SELECT status FROM events WHERE id = $1', [eventId]);
+  if (evRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
+  const evStatus = evRes.rows[0].status;
+
+  const user = await getCurrentUser();
+  let isAdmin = false;
+  if (user && user.role === 'ADMIN') isAdmin = true;
+  else if (user) {
+    const roleRes = await pool.query('SELECT role FROM event_members WHERE event_id = $1 AND user_id = $2', [eventId, user.id]);
+    if ((roleRes.rowCount ?? 0) > 0 && roleRes.rows[0].role === 'ORGANIZER') isAdmin = true;
+  }
+
+  if (!isAdmin && evStatus !== 'RESULTS') {
+    return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'Results are hidden during active voting and judging.' } }, { status: 403 });
+  }
+
+
 
   const evalsRes = await pool.query(`
     SELECT e.total_score, ja.judge_id, ja.submission_id 

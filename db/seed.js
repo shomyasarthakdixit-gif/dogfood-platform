@@ -39,9 +39,9 @@ async function seed() {
 
     // Event
     const resEvent = await pool.query(`
-      INSERT INTO events (slug, name, description, start_date, end_date)
-      VALUES ('dogfood-2026', 'Dogfood 2026', 'The ultimate hackathon challenge.', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days')
-      ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name RETURNING id;
+      INSERT INTO events (slug, name, description, start_date, end_date, status, voting_start, voting_end)
+      VALUES ('dogfood-2026', 'Dogfood 2026', 'The ultimate hackathon challenge.', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days', 'VOTING', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days')
+      ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, status = EXCLUDED.status, voting_start = EXCLUDED.voting_start, voting_end = EXCLUDED.voting_end RETURNING id;
     `);
     const eventId = resEvent.rows[0].id;
 

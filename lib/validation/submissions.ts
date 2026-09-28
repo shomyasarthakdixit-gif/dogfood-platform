@@ -8,3 +8,7 @@ export const submissionSchema = z.object({
 });
 
 export const submissionUpdateSchema = submissionSchema.partial();
+
+export const commentSchema = z.object({
+  content: z.string().min(1, "Comment cannot be empty").max(10000, "Comment is too long").transform(val => val.replace(/</g, "&lt;").replace(/>/g, "&gt;"))
+});

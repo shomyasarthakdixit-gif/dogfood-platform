@@ -55,9 +55,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ eventId:
   const countRes = await pool.query(countStr, queryParams);
   const total = parseInt(countRes.rows[0].count, 10);
 
-  // Ordering and Limits
-  queryStr += ` ORDER BY s.submitted_at DESC, s.id ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-  queryParams.push(limit, offset);
+  let seedParam: number | null = null;
+  if (eventRes.rows[0].status === 'VOTING') {
+    seedParam = parseInt(searchParams.get('seed') || '0', 10);
+    if (!seedParam || isNaN(seedParam)) {
+      seedParam = Math.floor(Math.random() * 1000000);
+    }
+    queryStr += ` ORDER BY MD5(s.id::text || $${paramIndex}::text) LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}`;
+    queryParams.push(seedParam.toString(), limit, offset);
+  } else {
+    queryStr += ` ORDER BY s.submitted_at DESC, s.id ASC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    queryParams.push(limit, offset);
+  }
 
   const res = await pool.query(queryStr, queryParams);
 
@@ -83,7 +92,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ eventId:
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
+      ...(seedParam !== null && { seed: seedParam })
     }
   });
 }
