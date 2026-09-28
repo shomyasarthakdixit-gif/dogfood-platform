@@ -14,7 +14,7 @@ export default function ParticleWave() {
     const AMOUNTY = 50;
     const numParticles = AMOUNTX * AMOUNTY;
     
-    let container = mountRef.current;
+    const container = mountRef.current;
     
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
     camera.position.z = 1000;

@@ -66,7 +66,7 @@ async function GalleryList() {
     { id: '2', title: 'Beta Analytics', team: { name: 'Data Miners' }, description: 'Open-source analytics dashboard for tracking hackathon participation and metrics.', repo_url: '#' },
     { id: '3', title: 'CloudPups', team: { name: 'Serverless Squad' }, description: 'Serverless pet monitoring solution using Edge computing and IoT.', repo_url: '#' },
     { id: '4', title: 'ChainLinks', team: { name: 'Web3 Builders' }, description: 'Blockchain verified credentials for hackathon winners.', repo_url: '#' },
-  ] as any[];
+  ];
 
   return (
     <div className={styles.grid}>
@@ -81,7 +81,7 @@ async function GalleryList() {
               {sub.team?.name || 'Anonymous Team'}
               <span className={styles.teamMembers}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                {Math.floor(Math.random() * 3) + 2} members
+                {(sub.title?.length || 5) % 3 + 2} members
               </span>
             </div>
             

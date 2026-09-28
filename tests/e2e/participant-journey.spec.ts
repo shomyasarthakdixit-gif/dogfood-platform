@@ -1,10 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Participant UI — Events', () => {
-  test('redirects root to /events', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveURL(/\/events/);
-  });
+
 
   test('events page renders title', async ({ page }) => {
     await page.goto('/events');

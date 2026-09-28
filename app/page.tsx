@@ -38,7 +38,7 @@ export default function HomePage() {
 
         <div className={styles.heroInner}>
           <h1 className={styles.heroTitle}>Dogfood 2026</h1>
-          <p className={styles.heroSubtitle}>The World's #1 Open-Source Hackathon Platform</p>
+          <p className={styles.heroSubtitle}>The World&apos;s #1 Open-Source Hackathon Platform</p>
           
           <div className={styles.searchContainer}>
             <input 
