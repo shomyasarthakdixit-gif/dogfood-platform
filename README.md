@@ -57,13 +57,21 @@ The Next.js application will be available at [http://localhost:3000](http://loca
 2. The Web container automatically runs **migrations** to bring the schema up to date.
 3. **Seed Data** is automatically inserted deterministically so you have a working environment immediately.
 
-### Seeded Demo Accounts
-The following accounts are automatically created for testing:
-- **Organizer**: `organizer@dogfood.local`
-- **Judge**: `judge@dogfood.local`
-- **Participants**: `participant1@dogfood.local`, `participant2@dogfood.local`
+### Local Demo Credentials
 
-*(Authentication UI is under construction in a separate branch, but the data is queryable).*
+These credentials are for local/demo evaluation only. They are seeded automatically in the development database. They are **NOT** production credentials. Self-hosted production deployments should replace/remove them.
+
+**Participant Account:**
+- Email: `participant1@dogfood.local`
+- Password: `password123`
+
+**Organizer Account:**
+- Email: `organizer@dogfood.local`
+- Password: `password123`
+
+**Judge Accounts:**
+- Email: `judge1@dogfood.local`, `judge2@dogfood.local`, `judge3@dogfood.local`
+- Password: `password123`
 
 ### How to Reset the Local Database
 To completely wipe the database and start fresh:

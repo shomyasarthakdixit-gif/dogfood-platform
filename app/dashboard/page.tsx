@@ -21,13 +21,17 @@ export default function DashboardPage() {
           </div>
           
           <h1 className={styles.heroTitle}>
-            Dogfood <span className={styles.heroTitleHighlight}>Command Center</span>
+            Dashboard <span className={styles.heroTitleHighlight}>Command Center</span>
           </h1>
           
           <p className={styles.heroSubtitle}>
             Proper team coordination is the first step toward a winning project. Discover 
             upcoming events, manage your submissions — and build the future.
           </p>
+          
+          <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+            <p>Authentication coming soon (Demo environment).</p>
+          </div>
           
           <div className={styles.heroActions}>
             <Link href="/login" className={styles.primaryBtn}>

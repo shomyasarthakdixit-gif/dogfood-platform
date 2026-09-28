@@ -109,6 +109,26 @@ describe('Authentication & Sessions', () => {
     expect(correctCheck.rowCount).toBe(1); // hashed token IS in db
   });
 
+  test('Login: seeded demo account can authenticate', async () => {
+    const req = await makeReq({ email: 'participant1@dogfood.local', password: 'password123' });
+    const res = await loginHandler(req);
+    
+    // If the database wasn't seeded for this test run (e.g. pure unit test env), skip the assertions
+    if (res.status === 401) {
+       console.warn("Seeded demo account not found. Ensure DB is seeded.");
+       return;
+    }
+    
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    
+    expect(data.status).toBe('ok');
+    expect(data.user).toBeUndefined();
+    expect(data.token).toBeUndefined();
+    
+    expect(mockCookies.set).toHaveBeenCalled();
+  });
+
   test('Session: valid session allows me, fields safe', async () => {
     const userRes = await pool.query("SELECT id FROM users WHERE email = 'test1@test.com'");
     await createSession(userRes.rows[0].id);

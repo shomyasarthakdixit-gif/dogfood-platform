@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unused-vars */
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 async function seed() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -7,22 +8,24 @@ async function seed() {
   try {
     console.log('Starting seed...');
 
+    const demoPasswordHash = await bcrypt.hash('password123', 10);
+
     // Organizer
     const resOrg = await pool.query(`
-      INSERT INTO users (email, name, role) 
-      VALUES ('organizer@dogfood.local', 'Demo Organizer', 'USER')
-      ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name RETURNING id;
-    `);
+      INSERT INTO users (email, name, role, password_hash) 
+      VALUES ('organizer@dogfood.local', 'Demo Organizer', 'USER', $1)
+      ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash RETURNING id;
+    `, [demoPasswordHash]);
     const orgId = resOrg.rows[0].id;
 
     // Judges
     const judges = [];
     for (let i = 1; i <= 3; i++) {
       const res = await pool.query(`
-        INSERT INTO users (email, name, role) 
-        VALUES ($1, $2, 'USER')
-        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name RETURNING id;
-      `, [`judge${i}@dogfood.local`, `Demo Judge ${i}`]);
+        INSERT INTO users (email, name, role, password_hash) 
+        VALUES ($1, $2, 'USER', $3)
+        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash RETURNING id;
+      `, [`judge${i}@dogfood.local`, `Demo Judge ${i}`, demoPasswordHash]);
       judges.push(res.rows[0].id);
     }
 
@@ -30,10 +33,10 @@ async function seed() {
     const participants = [];
     for (let i = 1; i <= 6; i++) {
       const res = await pool.query(`
-        INSERT INTO users (email, name, role) 
-        VALUES ($1, $2, 'USER')
-        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name RETURNING id;
-      `, [`participant${i}@dogfood.local`, `Participant ${i}`]);
+        INSERT INTO users (email, name, role, password_hash) 
+        VALUES ($1, $2, 'USER', $3)
+        ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, password_hash = EXCLUDED.password_hash RETURNING id;
+      `, [`participant${i}@dogfood.local`, `Participant ${i}`, demoPasswordHash]);
       participants.push(res.rows[0].id);
     }
 
