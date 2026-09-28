@@ -113,11 +113,20 @@ async function seed() {
     const rubricId = resRubric.rows[0]?.id || (await pool.query(`SELECT id FROM rubrics WHERE event_id = $1 AND name = 'Standard Judging Rubric'`, [eventId])).rows[0].id;
 
     const resCrit1 = await pool.query(`
-      INSERT INTO rubric_criteria (rubric_id, name, max_score)
-      SELECT $1, 'Innovation', 10
+      INSERT INTO rubric_criteria (rubric_id, name, max_score, weight)
+      SELECT $1, 'Innovation', 10, 1.0
       WHERE NOT EXISTS (SELECT 1 FROM rubric_criteria WHERE rubric_id = $1 AND name = 'Innovation')
       RETURNING id;
     `, [rubricId]);
+    const crit1Id = resCrit1.rows[0]?.id || (await pool.query(`SELECT id FROM rubric_criteria WHERE rubric_id = $1 AND name = 'Innovation'`, [rubricId])).rows[0].id;
+
+    const resCrit2 = await pool.query(`
+      INSERT INTO rubric_criteria (rubric_id, name, max_score, weight)
+      SELECT $1, 'Technical Complexity', 10, 2.0
+      WHERE NOT EXISTS (SELECT 1 FROM rubric_criteria WHERE rubric_id = $1 AND name = 'Technical Complexity')
+      RETURNING id;
+    `, [rubricId]);
+    const crit2Id = resCrit2.rows[0]?.id || (await pool.query(`SELECT id FROM rubric_criteria WHERE rubric_id = $1 AND name = 'Technical Complexity'`, [rubricId])).rows[0].id;
 
     // Judge Profiles
     const judgeProfiles = [];
@@ -143,12 +152,46 @@ async function seed() {
       [judgeProfiles[2], submissions[0]],
     ];
 
+    // We will create different scoring patterns to demonstrate normalization
+    const scorePatterns = [
+      { j: 0, scores: [ [8, 9], [7, 8] ] }, // Judge 1 scores high
+      { j: 1, scores: [ [4, 5], [5, 6] ] }, // Judge 2 scores low
+      { j: 2, scores: [ [6, 7], [9, 9] ] }, // Judge 3 scores mid-high
+    ];
+
+    let assignIdx = 0;
     for (const [jId, sId] of assignments) {
-      await pool.query(`
+      const jaRes = await pool.query(`
         INSERT INTO judge_assignments (judge_id, submission_id, status)
-        VALUES ($1, $2, 'PENDING')
-        ON CONFLICT (judge_id, submission_id) DO NOTHING;
+        VALUES ($1, $2, 'COMPLETED')
+        ON CONFLICT (judge_id, submission_id) DO UPDATE SET status = 'COMPLETED' RETURNING id;
       `, [jId, sId]);
+      
+      const jaId = jaRes.rows[0].id;
+      
+      const pattern = scorePatterns.find(p => p.j === judgeProfiles.indexOf(jId));
+      const s = pattern.scores.shift();
+      const score1 = s[0];
+      const score2 = s[1];
+      const total = (score1 / 10 * 1.0 + score2 / 10 * 2.0) / 3.0 * 100;
+
+      const evRes = await pool.query(`
+        INSERT INTO evaluations (assignment_id, status, total_score)
+        VALUES ($1, 'SUBMITTED', $2)
+        ON CONFLICT (assignment_id) DO UPDATE SET total_score = $2 RETURNING id;
+      `, [jaId, total]);
+
+      const evId = evRes.rows[0].id;
+
+      await pool.query(`
+        INSERT INTO evaluation_scores (evaluation_id, criterion_id, score) VALUES ($1, $2, $3)
+        ON CONFLICT (evaluation_id, criterion_id) DO NOTHING;
+      `, [evId, crit1Id, score1]);
+      
+      await pool.query(`
+        INSERT INTO evaluation_scores (evaluation_id, criterion_id, score) VALUES ($1, $2, $3)
+        ON CONFLICT (evaluation_id, criterion_id) DO NOTHING;
+      `, [evId, crit2Id, score2]);
     }
 
     console.log('Seed completed successfully.');
