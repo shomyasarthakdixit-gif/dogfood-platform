@@ -1,0 +1,21 @@
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-inset) 25%,
+    var(--color-border) 50%,
+    var(--color-surface-inset) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+}
+
+.text { height: 1em; border-radius: var(--radius-sm); }
+.heading { height: 1.5em; border-radius: var(--radius-sm); }
+.avatar { border-radius: var(--radius-full); }
+.card { height: 200px; border-radius: var(--radius-lg); }
