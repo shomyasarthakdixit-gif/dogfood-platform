@@ -10,7 +10,6 @@ import styles from './Nav.module.css';
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/events', label: 'Events' },
-  { href: '/gallery', label: 'Gallery' },
 ];
 
 export default function Nav() {

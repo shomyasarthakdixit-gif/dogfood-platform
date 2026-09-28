@@ -1,9 +1,7 @@
 import { expect, test, describe, afterAll, beforeAll, vi, beforeEach } from 'vitest';
 import { getDbPool } from '@/lib/db';
 import { GET as getGallery } from '@/app/api/events/[eventId]/gallery/route';
-import { GET as getPublicSubmission } from '@/app/api/submissions/[submissionId]/public/route';
 import { POST as createEvent } from '@/app/api/events/route';
-import { POST as createTrack } from '@/app/api/events/[eventId]/tracks/route';
 import { POST as createTeam } from '@/app/api/events/[eventId]/teams/route';
 import { POST as createSubmission } from '@/app/api/events/[eventId]/submissions/route';
 import { POST as submitSubmission } from '@/app/api/submissions/[submissionId]/submit/route';
@@ -12,17 +10,15 @@ import { createSession } from '@/lib/auth';
 const mockCookies = { get: vi.fn(), set: vi.fn(), delete: vi.fn() };
 vi.mock('next/headers', () => ({ cookies: vi.fn(async () => mockCookies) }));
 
-describe('Sprint 2.5: Public Gallery', () => {
+describe('Sprint 2.5: Top 10 Projects Gallery', () => {
   const pool = getDbPool();
-  let adminId: string, part1Id: string, part2Id: string;
-  let eventId: string, hiddenEventId: string;
-  let track1Id: string, track2Id: string;
-  let sub1Id: string, sub2Id: string;
+  let adminId: string, part1Id: string;
+  let submissionEventId: string, resultsEventId: string;
+  let sub1Id: string;
 
   beforeAll(async () => {
     adminId = (await pool.query("INSERT INTO users (email, name, role) VALUES ('admin@gallery.com', 'Admin', 'ADMIN') RETURNING id")).rows[0].id;
     part1Id = (await pool.query("INSERT INTO users (email, name, role) VALUES ('part1@gallery.com', 'Part1', 'USER') RETURNING id")).rows[0].id;
-    part2Id = (await pool.query("INSERT INTO users (email, name, role) VALUES ('part2@gallery.com', 'Part2', 'USER') RETURNING id")).rows[0].id;
   });
 
   afterAll(async () => {
@@ -48,100 +44,81 @@ describe('Sprint 2.5: Public Gallery', () => {
   test('Setup Events & Submissions', async () => {
     await mockSession(adminId);
     let res = await createEvent(await makeReq({
-      name: 'Gallery Event', slug: 'gallery-event-' + Date.now(),
+      name: 'Submission Event', slug: 'sub-event-' + Date.now(),
       start_date: new Date().toISOString(), end_date: new Date(Date.now() + 86400000).toISOString(),
       submission_end: new Date(Date.now() + 86400000).toISOString(),
       status: 'SUBMISSION'
     }));
-    eventId = (await res.json()).event.id;
+    submissionEventId = (await res.json()).event.id;
 
     res = await createEvent(await makeReq({
-      name: 'Hidden Event', slug: 'hidden-event-' + Date.now(),
+      name: 'Results Event', slug: 'results-event-' + Date.now(),
       start_date: new Date().toISOString(), end_date: new Date(Date.now() + 86400000).toISOString(),
-      status: 'DRAFT'
+      status: 'RESULTS'
     }));
-    hiddenEventId = (await res.json()).event.id;
+    resultsEventId = (await res.json()).event.id;
 
-    await pool.query("INSERT INTO event_members (event_id, user_id, role) VALUES ($1, $2, 'PARTICIPANT')", [eventId, part1Id]);
-    await pool.query("INSERT INTO event_members (event_id, user_id, role) VALUES ($1, $2, 'PARTICIPANT')", [eventId, part2Id]);
-
-    // Create tracks
-    let trackRes = await createTrack(await makeReq({ name: 'Track 1' }), { params: Promise.resolve({ eventId }) });
-    track1Id = (await trackRes.json()).track.id;
-
-    trackRes = await createTrack(await makeReq({ name: 'Track 2' }), { params: Promise.resolve({ eventId }) });
-    track2Id = (await trackRes.json()).track.id;
+    await pool.query("INSERT INTO event_members (event_id, user_id, role) VALUES ($1, $2, 'PARTICIPANT')", [resultsEventId, part1Id]);
 
     // Part 1 -> Team 1 -> Sub 1 (Submitted)
     await mockSession(part1Id);
-    let teamRes = await createTeam(await makeReq({ name: 'Team Alpha' }), { params: Promise.resolve({ eventId }) });
+    const teamRes = await createTeam(await makeReq({ name: 'Team Alpha' }), { params: Promise.resolve({ eventId: resultsEventId }) });
     const team1Id = (await teamRes.json()).team.id;
 
-    let subRes = await createSubmission(await makeReq({ title: 'Robot Alpha', description: 'Best robot', track_id: track1Id }), { params: Promise.resolve({ eventId }) });
+    const subRes = await createSubmission(await makeReq({ title: 'Robot Alpha', description: 'Best robot' }), { params: Promise.resolve({ eventId: resultsEventId }) });
     sub1Id = (await subRes.json()).submission.id;
     await submitSubmission(await makeReq({}), { params: Promise.resolve({ submissionId: sub1Id }) });
 
-    // Part 2 -> Team 2 -> Sub 2 (Draft)
-    await mockSession(part2Id);
-    teamRes = await createTeam(await makeReq({ name: 'Team Beta' }), { params: Promise.resolve({ eventId }) });
-    const team2Id = (await teamRes.json()).team.id;
-
-    subRes = await createSubmission(await makeReq({ title: 'Robot Beta', description: 'Second robot', track_id: track2Id }), { params: Promise.resolve({ eventId }) });
-    sub2Id = (await subRes.json()).submission.id;
+    // Give it an evaluation score
+    await mockSession(adminId);
+    const jpRes = await pool.query("INSERT INTO judge_profiles (user_id, event_id) VALUES ($1, $2) RETURNING id", [adminId, resultsEventId]);
+    const jaRes = await pool.query("INSERT INTO judge_assignments (judge_id, submission_id) VALUES ($1, $2) RETURNING id", [jpRes.rows[0].id, sub1Id]);
+    await pool.query("INSERT INTO evaluations (assignment_id, total_score, status) VALUES ($1, 95, 'SUBMITTED')", [jaRes.rows[0].id]);
   });
 
-  test('Public gallery accessible and excludes drafts', async () => {
+  test('Top 10 hidden before RESULTS (e.g. SUBMISSION status)', async () => {
     mockCookies.get.mockReturnValue(undefined); // No auth
     const req = await makeReq();
-    const res = await getGallery(req, { params: Promise.resolve({ eventId }) });
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    
-    expect(data.items.length).toBe(1); // Only sub1 (SUBMITTED)
-    expect(data.items[0].id).toBe(sub1Id);
-    expect(data.items[0].track.id).toBe(track1Id);
-    expect(data.items[0].team.name).toBe('Team Alpha');
-  });
-
-  test('Public gallery prevents access to hidden events', async () => {
-    mockCookies.get.mockReturnValue(undefined);
-    const req = await makeReq();
-    const res = await getGallery(req, { params: Promise.resolve({ eventId: hiddenEventId }) });
+    const res = await getGallery(req, { params: Promise.resolve({ eventId: submissionEventId }) });
     expect(res.status).toBe(403);
   });
 
-  test('Public detail view allows submitted', async () => {
+  test('Top 10 visible after RESULTS', async () => {
+    mockCookies.get.mockReturnValue(undefined); // No auth
     const req = await makeReq();
-    const res = await getPublicSubmission(req, { params: Promise.resolve({ submissionId: sub1Id }) });
+    const res = await getGallery(req, { params: Promise.resolve({ eventId: resultsEventId }) });
     expect(res.status).toBe(200);
-  });
-
-  test('Public detail view blocks draft', async () => {
-    const req = await makeReq();
-    const res = await getPublicSubmission(req, { params: Promise.resolve({ submissionId: sub2Id }) });
-    expect(res.status).toBe(404);
-  });
-
-  test('Gallery search', async () => {
-    const req = await makeReq(null, 'q=Robot');
-    const res = await getGallery(req, { params: Promise.resolve({ eventId }) });
-    expect(res.status).toBe(200);
-    expect((await res.json()).items.length).toBe(1);
-  });
-
-  test('Gallery search no match', async () => {
-    const req = await makeReq(null, 'q=xyz');
-    const res = await getGallery(req, { params: Promise.resolve({ eventId }) });
-    expect((await res.json()).items.length).toBe(0);
-  });
-
-  test('Gallery filter by track', async () => {
-    const req = await makeReq(null, `trackId=${track1Id}`);
-    const res = await getGallery(req, { params: Promise.resolve({ eventId }) });
-    expect((await res.json()).items.length).toBe(1);
+    const data = await res.json();
     
-    const req2 = await makeReq(null, `trackId=${track2Id}`);
-    const res2 = await getGallery(req2, { params: Promise.resolve({ eventId }) });
-    expect((await res2.json()).items.length).toBe(0); // Beta is draft!
+    expect(data.items.length).toBe(1); // Only sub1
+    expect(data.items[0].id).toBe(sub1Id);
+    expect(data.items[0].team.name).toBe('Team Alpha');
+    expect(data.items[0].rank).toBeDefined();
+  });
+
+  test('ARCHIVED event keeps Top 10 visible', async () => {
+    await pool.query("UPDATE events SET status = 'ARCHIVED' WHERE id = $1", [resultsEventId]);
+    mockCookies.get.mockReturnValue(undefined); // No auth
+    const req = await makeReq();
+    const res = await getGallery(req, { params: Promise.resolve({ eventId: resultsEventId }) });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.items.length).toBe(1);
+    
+    // Put back to results for future if needed
+    await pool.query("UPDATE events SET status = 'RESULTS' WHERE id = $1", [resultsEventId]);
+  });
+
+  test('Top 10 response does not expose private information', async () => {
+    mockCookies.get.mockReturnValue(undefined); // No auth
+    const req = await makeReq();
+    const res = await getGallery(req, { params: Promise.resolve({ eventId: resultsEventId }) });
+    const data = await res.json();
+    
+    const item = data.items[0];
+    expect(item).not.toHaveProperty('total_score');
+    expect(item).not.toHaveProperty('evaluations');
+    expect(item).not.toHaveProperty('judge_id');
   });
 });
+

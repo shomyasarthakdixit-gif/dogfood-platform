@@ -26,6 +26,7 @@ export interface Event {
   end_date: string;
   created_at: string;
   status?: EventStatus;
+  lifecycle_status?: string;
   tracks?: Track[];
   prizes?: Prize[];
 }

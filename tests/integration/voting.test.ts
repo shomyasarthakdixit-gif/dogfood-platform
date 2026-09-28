@@ -191,11 +191,5 @@ describe('Sprint 4: Voting & Security', () => {
     expect(resNorm.status).toBe(403);
   });
 
-  test('RANDOMIZATION 32 & 33: Gallery ordering is seeded', async () => {
-    // Make a gallery request with a seed
-    const req1 = new Request(`http://localhost/api?seed=9999`);
-    const res1 = await getGallery(req1, { params: Promise.resolve({ eventId: eventVotingId }) });
-    const data1 = await res1.json();
-    expect(data1.pagination.seed).toBe(9999);
-  });
+
 });

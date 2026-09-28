@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
-import { getEventById } from '@/lib/api/events';
+import { getEventById, getTop10Projects } from '@/lib/api/events';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -19,6 +19,46 @@ export async function generateMetadata({
   return {
     title: event ? `${event.name} — Dogfood 2026` : 'Event not found',
   };
+}
+
+async function Top10Projects({ eventId }: { eventId: string }) {
+  const projects = await getTop10Projects(eventId);
+  if (projects.length === 0) return null;
+
+  return (
+    <section aria-labelledby="top10-heading" style={{ marginTop: 'var(--space-8)' }}>
+      <h2 id="top10-heading" className={styles.sectionTitle}>
+        Top 10 Projects
+      </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+        {projects.map((p, i) => (
+          <Card key={p.id}>
+            <div style={{ padding: 'var(--space-4)', display: 'flex', gap: 'var(--space-4)', alignItems: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--color-primary)', width: '40px', textAlign: 'center' }}>
+                #{i + 1}
+              </div>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{p.title}</h3>
+              <p style={{ margin: '4px 0 0 0', color: 'var(--color-text-light)' }}>
+                {p.team.name} {p.track && ` • ${p.track.name}`}
+              </p>
+              {p.description && (
+                <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                  {p.description}
+                </p>
+              )}
+            </div>
+            {p.url && (
+              <Button as="a" href={p.url} variant="secondary" size="sm" target="_blank" rel="noopener noreferrer">
+                View Project
+              </Button>
+            )}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 function EventTimeline({ event }: { event: Event }) {
@@ -215,14 +255,6 @@ async function EventDetail({ eventId }: { eventId: string }) {
             >
               Go to Dashboard →
             </Button>
-            <Button
-              as="a"
-              href="/gallery"
-              variant="secondary"
-              size="lg"
-            >
-              View Gallery
-            </Button>
           </div>
         )}
       </div>
@@ -259,6 +291,13 @@ async function EventDetail({ eventId }: { eventId: string }) {
               </div>
             </section>
           )}
+
+          {/* Top 10 Projects */}
+          {(event.lifecycle_status === 'RESULTS' || event.lifecycle_status === 'ARCHIVED') && (
+            <Suspense fallback={<div>Loading top projects...</div>}>
+              <Top10Projects eventId={event.id} />
+            </Suspense>
+          )}
         </div>
 
         {/* Sidebar: Timeline */}
@@ -273,9 +312,6 @@ async function EventDetail({ eventId }: { eventId: string }) {
             <div className={styles.quickLinks}>
               <Button as="a" href="/dashboard" variant="secondary" fullWidth size="md">
                 My Dashboard
-              </Button>
-              <Button as="a" href="/gallery" variant="secondary" fullWidth size="md">
-                Project Gallery
               </Button>
               <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
                 Submit a project

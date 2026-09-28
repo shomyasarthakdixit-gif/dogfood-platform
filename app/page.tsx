@@ -112,7 +112,7 @@ export default function HomePage() {
           <div className={styles.stepItem}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '12px', color: 'var(--color-accent)' }}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
             <div className={styles.stepHeader}>04 — Showcase</div>
-            <p>Get discovered in the public project gallery.</p>
+            <p>Get discovered in the Top 10 project showcase after the event.</p>
           </div>
         </div>
       </section>
@@ -162,8 +162,7 @@ export default function HomePage() {
                 <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#React</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 500 }}>Team Alpha</span>
-                <Link href="/gallery/1" className={styles.storyLink}>View →</Link>
+                <div className={styles.storyLink}>Top project</div>
               </div>
             </div>
           </div>
@@ -177,8 +176,7 @@ export default function HomePage() {
                 <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#Rust</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 500 }}>Blocksmiths</span>
-                <Link href="/gallery/2" className={styles.storyLink}>View →</Link>
+                <div className={styles.storyLink}>Top project</div>
               </div>
             </div>
           </div>
@@ -191,14 +189,12 @@ export default function HomePage() {
                 <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#GreenTech</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 500 }}>EcoDevs</span>
-                <Link href="/gallery/3" className={styles.storyLink}>View →</Link>
+                <div className={styles.storyLink}>Top project</div>
               </div>
             </div>
           </div>
         </div>
         <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
-          <Button as="a" href="/gallery" variant="secondary" size="lg">Explore all projects →</Button>
         </div>
       </section>
 
@@ -291,7 +287,7 @@ export default function HomePage() {
           <div className={styles.footerCol}>
             <h4>Platform</h4>
             <Link href="/events">Events</Link>
-            <Link href="/gallery">Gallery</Link>
+
             <Link href="/leaderboard">Leaderboard</Link>
           </div>
           <div className={styles.footerCol}>

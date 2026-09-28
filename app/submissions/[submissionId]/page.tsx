@@ -56,9 +56,6 @@ async function SubmissionContent({ submissionId }: { submissionId: string }) {
               Continue editing
             </Button>
           )}
-          <Button as="a" href="/gallery" variant="secondary" size="sm">
-            View gallery
-          </Button>
         </div>
       </div>
 
