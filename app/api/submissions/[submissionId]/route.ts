@@ -6,11 +6,16 @@ import { submissionUpdateSchema } from '@/lib/validation/submissions';
 export async function GET(_req: Request, { params }: { params: Promise<{ submissionId: string }> }) {
   const submissionId = (await params).submissionId;
   const pool = getDbPool();
-  const res = await pool.query('SELECT * FROM submissions WHERE id = $1', [submissionId]);
+  const res = await pool.query(`
+    SELECT s.*, e.status as event_status 
+    FROM submissions s
+    JOIN events e ON s.event_id = e.id
+    WHERE s.id = $1
+  `, [submissionId]);
   if (res.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Submission not found' } }, { status: 404 });
   const sub = res.rows[0];
 
-  if (sub.status === 'SUBMITTED') {
+  if (sub.status === 'SUBMITTED' && sub.event_status !== 'DRAFT') {
     return NextResponse.json({ submission: sub });
   }
 
@@ -24,12 +29,28 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ submis
   const submissionId = (await params).submissionId;
   const pool = getDbPool();
   
-  const subRes = await pool.query('SELECT * FROM submissions WHERE id = $1', [submissionId]);
+  const subRes = await pool.query(`
+    SELECT s.*, e.status as event_status, e.submission_start, e.submission_end 
+    FROM submissions s
+    JOIN events e ON s.event_id = e.id
+    WHERE s.id = $1
+  `, [submissionId]);
   if (subRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Submission not found' } }, { status: 404 });
   const sub = subRes.rows[0];
 
   if (sub.status !== 'DRAFT') {
     return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'Cannot edit a finalized submission' } }, { status: 403 });
+  }
+
+  const now = new Date();
+  if (sub.event_status === 'DRAFT' || sub.event_status === 'ARCHIVED') {
+    return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Event is not active' } }, { status: 400 });
+  }
+  if (sub.submission_start && new Date(sub.submission_start) > now) {
+    return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Submission window has not started' } }, { status: 400 });
+  }
+  if (sub.submission_end && new Date(sub.submission_end) < now) {
+    return NextResponse.json({ error: { code: 'SUBMISSION_DEADLINE_PASSED', message: 'Submissions are no longer being accepted.' } }, { status: 400 });
   }
 
   const { error } = await requireTeamMember(sub.team_id);

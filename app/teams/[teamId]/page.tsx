@@ -100,7 +100,7 @@ async function TeamContent({ teamId }: { teamId: string }) {
               <p className={styles.submissionText}>
                 Your team hasn&apos;t created a submission yet.
               </p>
-              <Button as="a" href="/submissions/new" variant="primary" size="sm">
+              <Button as="a" href={`/submissions/new?eventId=${team.event_id}`} variant="primary" size="sm">
                 Create submission
               </Button>
             </div>

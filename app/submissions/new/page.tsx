@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -47,7 +48,17 @@ function validateForm(data: {
 type SaveState = 'idle' | 'saving-draft' | 'submitting' | 'saved' | 'submitted' | 'error';
 
 export default function NewSubmissionPage() {
+  return (
+    <Suspense fallback={<PageContainer size="md"><div>Loading...</div></PageContainer>}>
+      <NewSubmissionForm />
+    </Suspense>
+  );
+}
+
+function NewSubmissionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get('eventId');
   const { addToast } = useToast();
 
   const [title, setTitle] = useState('');
@@ -68,16 +79,17 @@ export default function NewSubmissionPage() {
 
   async function saveDraft() {
     if (!validate()) return;
+    if (!eventId) {
+      setErrors({ form: 'Missing event ID. Please start from the event page.' });
+      setSaveState('error');
+      return;
+    }
     setSaveState('saving-draft');
     try {
-      const res = await fetch('/api/submissions', {
+      const res = await fetch(`/api/events/${eventId}/submissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Note: teamId and eventId will come from real session once auth merges.
-        // Using placeholder UUIDs that will be replaced by actual session data.
         body: JSON.stringify({
-          teamId: '00000000-0000-0000-0000-000000000000',
-          eventId: '00000000-0000-0000-0000-000000000000',
           title: title.trim(),
           description: description.trim() || undefined,
           url: url.trim() || undefined,
@@ -100,15 +112,18 @@ export default function NewSubmissionPage() {
 
   async function submitProject() {
     if (!validate()) return;
+    if (!eventId) {
+      setErrors({ form: 'Missing event ID. Please start from the event page.' });
+      setSaveState('error');
+      return;
+    }
     setSaveState('submitting');
     try {
       // First create the submission as DRAFT, then immediately submit it
-      const createRes = await fetch('/api/submissions', {
+      const createRes = await fetch(`/api/events/${eventId}/submissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          teamId: '00000000-0000-0000-0000-000000000000',
-          eventId: '00000000-0000-0000-0000-000000000000',
           title: title.trim(),
           description: description.trim() || undefined,
           url: url.trim() || undefined,
@@ -148,12 +163,6 @@ export default function NewSubmissionPage() {
         <p className={styles.subtitle}>
           Share what you&apos;ve built. You can save a draft first and come back to edit it.
         </p>
-      </div>
-
-      {/* Auth notice */}
-      <div className={styles.authNotice} role="note">
-        <strong>Note:</strong> Authentication is coming soon. Submission will be linked to your account
-        once the login system is available. For now, use this form to preview the workflow.
       </div>
 
       <Card shadow padding="lg">

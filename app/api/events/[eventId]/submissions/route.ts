@@ -27,6 +27,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
 
     const pool = getDbPool();
 
+    const eventRes = await pool.query('SELECT status, submission_start, submission_end FROM events WHERE id = $1', [eventId]);
+    if (eventRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
+    const event = eventRes.rows[0];
+
+    const now = new Date();
+    if (event.status === 'DRAFT' || event.status === 'ARCHIVED') {
+      return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Event is not active' } }, { status: 400 });
+    }
+    if (event.submission_start && new Date(event.submission_start) > now) {
+      return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Submission window has not started' } }, { status: 400 });
+    }
+    if (event.submission_end && new Date(event.submission_end) < now) {
+      return NextResponse.json({ error: { code: 'SUBMISSION_DEADLINE_PASSED', message: 'Submissions are no longer being accepted.' } }, { status: 400 });
+    }
+
     const teamRes = await pool.query(`
       SELECT t.id FROM teams t
       JOIN team_members tm ON t.id = tm.team_id

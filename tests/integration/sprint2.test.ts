@@ -66,6 +66,7 @@ describe('Sprint 2: Events, Teams, Submissions', () => {
       start_date: new Date().toISOString(),
       end_date: new Date(Date.now() + 86400000).toISOString(),
       submission_end: new Date(Date.now() + 86400000).toISOString(),
+      status: 'SUBMISSION'
     });
     const res = await createEvent(req);
     expect(res.status).toBe(200);

@@ -7,7 +7,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ submiss
   const pool = getDbPool();
   
   const subRes = await pool.query(`
-    SELECT s.*, e.submission_start, e.submission_end 
+    SELECT s.*, e.status as event_status, e.submission_start, e.submission_end 
     FROM submissions s
     JOIN events e ON s.event_id = e.id
     WHERE s.id = $1
@@ -24,6 +24,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ submiss
   }
 
   const now = new Date();
+  if (sub.event_status === 'DRAFT' || sub.event_status === 'ARCHIVED') {
+    return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Event is not active' } }, { status: 400 });
+  }
   if (sub.submission_start && new Date(sub.submission_start) > now) {
     return NextResponse.json({ error: { code: 'EVENT_NOT_ACTIVE', message: 'Submission window has not started' } }, { status: 400 });
   }

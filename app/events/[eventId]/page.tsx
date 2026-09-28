@@ -277,7 +277,7 @@ async function EventDetail({ eventId }: { eventId: string }) {
               <Button as="a" href="/gallery" variant="secondary" fullWidth size="md">
                 Project Gallery
               </Button>
-              <Button as="a" href="/submissions/new" variant="primary" fullWidth size="md">
+              <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
                 Submit a project
               </Button>
             </div>
