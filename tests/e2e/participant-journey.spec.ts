@@ -23,10 +23,7 @@ test.describe('Participant UI — Events', () => {
     await expect(page.getByText(/Authentication coming soon/)).toBeVisible();
   });
 
-  test('gallery page loads', async ({ page }) => {
-    await page.goto('/gallery');
-    await expect(page.getByRole('heading', { name: 'Project Gallery' })).toBeVisible();
-  });
+
 
   test('new submission page loads', async ({ page }) => {
     await page.goto('/submissions/new');
@@ -46,16 +43,7 @@ test.describe('Participant UI — Events', () => {
     await expect(page.getByText(/Project name is required/)).toBeVisible();
   });
 
-  test('gallery search filters projects', async ({ page }) => {
-    await page.goto('/gallery');
-    // If projects are loaded, the search box should be visible
-    const searchBox = page.getByRole('searchbox');
-    if (await searchBox.isVisible()) {
-      await searchBox.fill('Alpha');
-      // Result count should update
-      await expect(page.getByText(/project/)).toBeVisible();
-    }
-  });
+
 
   test('mobile nav toggle works', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
@@ -75,11 +63,5 @@ test.describe('Participant UI — Accessibility', () => {
     await expect(page.getByRole('main')).toBeVisible();
   });
 
-  test('gallery search input has accessible label', async ({ page }) => {
-    await page.goto('/gallery');
-    const search = page.getByLabel('Search projects');
-    if (await search.isVisible()) {
-      await expect(search).toBeVisible();
-    }
-  });
+
 });

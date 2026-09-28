@@ -10,6 +10,7 @@ import type { Metadata } from 'next';
 import styles from './events.module.css';
 
 export const metadata: Metadata = { title: 'Hackathons — Dogfood 2026' };
+export const dynamic = 'force-dynamic';
 
 function getImageForEventId(id: string) {
   const customImages: Record<string, string> = {
