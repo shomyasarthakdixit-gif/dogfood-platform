@@ -2,7 +2,7 @@ import styles from './PageContainer.module.css';
 
 interface PageContainerProps {
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   className?: string;
 }
 

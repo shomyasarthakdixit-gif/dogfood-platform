@@ -40,16 +40,9 @@ export default function HomePage() {
           <h1 className={styles.heroTitle}>Dogfood 2026</h1>
           <p className={styles.heroSubtitle}>The World's #1 Open-Source Hackathon Platform</p>
           
-          <div className={styles.searchContainer}>
-            <input 
-              type="text" 
-              placeholder="Enter your location or project data..." 
-              className={styles.searchInput} 
-            />
-            <button className={styles.searchBtn}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </button>
-          </div>
+          <Button as="a" href="/login" variant="primary" size="lg" style={{ borderRadius: '999px', fontSize: '1.125rem', padding: '16px 40px', boxShadow: '0 10px 25px rgba(124, 58, 237, 0.3)' }}>
+            Join Now
+          </Button>
         </div>
 
         <div className={styles.floatingStatsWrapper}>
@@ -240,7 +233,7 @@ export default function HomePage() {
         <p className={styles.sectionSubtitle} style={{ marginBottom: 'var(--space-8)' }}>
           Join the ultimate open-source hackathon platform.
         </p>
-        <Button as="a" href="/register" className={styles.btnPrimary} size="lg">
+        <Button as="a" href="/login" className={styles.btnPrimary} size="lg">
           Join Dogfood 2026
         </Button>
       </section>
@@ -315,7 +308,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className={styles.footerBottom}>
-          <span>© 2026 Dogfood</span>
+          <span>Dogfood 2026 &mdash; &copy; 2026 Dogfood by BeyondQ</span>
           <span>Open-source hackathon platform</span>
         </div>
       </footer>
