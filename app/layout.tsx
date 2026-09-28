@@ -26,16 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               marginTop: 'auto',
             }}
           >
-            <p>
-              Dogfood 2026 &mdash;{' '}
-              <a
-                href="https://github.com/shomyasarthakdixit-gif/dogfood-platform"
-                style={{ color: 'var(--color-accent)' }}
-              >
-                Open Source
-              </a>{' '}
-              &copy; 2026 Dogfood Challenge Team
-            </p>
+            <p>Dogfood 2026 &mdash; &copy; 2026 Dogfood by BeyondQ</p>
           </footer>
         </ToastProvider>
       </body>

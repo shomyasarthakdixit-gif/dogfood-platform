@@ -10,7 +10,9 @@
 .md { max-width: 768px; }
 .lg { max-width: var(--max-width); }
 .xl { max-width: 1400px; }
+.full { max-width: 100%; padding: 0; }
 
 @media (max-width: 768px) {
   .container { padding: var(--space-8) var(--space-4); }
+  .full { padding: 0; }
 }

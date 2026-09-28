@@ -46,6 +46,7 @@ export default function Nav() {
           <div className={styles.actions}>
             {isLoggedIn ? (
               <>
+                <Link href="/login" className={styles.link}>Login</Link>
                 <Link href="/dashboard" className={styles.link}>Dashboard</Link>
                 
               </>
