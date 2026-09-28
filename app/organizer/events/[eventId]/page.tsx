@@ -207,10 +207,16 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
     <PageContainer>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Manage: {event.name}</h1>
-        {event.status === 'DRAFT' && (
+        {event.status === 'DRAFT' ? (
           <Button variant="secondary" onClick={handleDeleteEvent} style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}>
             Delete Event
           </Button>
+        ) : (
+          <div title="Only DRAFT events can be deleted">
+            <Button variant="secondary" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
+              Delete Event
+            </Button>
+          </div>
         )}
       </div>
 
