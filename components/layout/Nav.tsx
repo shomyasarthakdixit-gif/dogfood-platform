@@ -3,10 +3,12 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Button from '@/components/ui/Button';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 import styles from './Nav.module.css';
 
 const navLinks = [
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/', label: 'Home' },
   { href: '/events', label: 'Events' },
   { href: '/gallery', label: 'Gallery' },
 ];
@@ -14,6 +16,8 @@ const navLinks = [
 export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  // Mock auth state for the UI demonstration
+  const isLoggedIn = true;
 
   return (
     <header>
@@ -31,7 +35,7 @@ export default function Nav() {
                 role="listitem"
                 className={[
                   styles.link,
-                  pathname.startsWith(link.href) ? styles.linkActive : '',
+                  pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href)) ? styles.linkActive : '',
                 ].filter(Boolean).join(' ')}
               >
                 {link.label}
@@ -40,9 +44,20 @@ export default function Nav() {
           </div>
 
           <div className={styles.actions}>
-            <Link href="/submissions/new" className={[styles.link].join(' ')} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>
-              Submit project
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link href="/dashboard" className={styles.link}>Dashboard</Link>
+                
+              </>
+            ) : (
+              <>
+                <Link href="/login" className={styles.link}>Sign In</Link>
+                <Button as="a" href="/register" variant="primary" size="sm">
+                  Register
+                </Button>
+              </>
+            )}
+            <ThemeToggle />
           </div>
 
           <button
@@ -75,14 +90,7 @@ export default function Nav() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/submissions/new"
-            className={styles.mobileLink}
-            style={{ color: 'var(--color-accent)', fontWeight: 600 }}
-            onClick={() => setMobileOpen(false)}
-          >
-            Submit project
-          </Link>
+          
         </div>
       )}
     </header>

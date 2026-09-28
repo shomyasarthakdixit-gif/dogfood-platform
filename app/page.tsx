@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import Button from '@/components/ui/Button';
+import CountUp from '@/components/ui/CountUp';
 import styles from './home.module.css';
+import ParticleWave from '@/components/ui/ParticleWave';
 
 export const metadata = {
   title: 'HackForge 2026',
@@ -10,201 +12,243 @@ export const metadata = {
 export default function HomePage() {
   return (
     <div className={styles.page}>
-      {/* Hero Section */}
+<svg width="0" height="0" style={{ position: 'absolute' }}>
+  <defs>
+    <mask id="bento-mask" maskContentUnits="objectBoundingBox">
+      <rect x="0.3416" y="0" width="0.6583" height="1" rx="0.06" ry="0.06" fill="white" />
+      <rect x="0" y="0.3416" width="1" height="0.6583" rx="0.06" ry="0.06" fill="white" />
+      <rect x="0.3166" y="0.3416" width="0.025" height="0.3166" fill="black" />
+      <rect x="0.6583" y="0" width="0.025" height="1" fill="black" />
+      <rect x="0.3416" y="0.3166" width="0.6583" height="0.025" fill="black" />
+      <rect x="0" y="0.6583" width="1" height="0.025" fill="black" />
+    </mask>
+  </defs>
+</svg>
+
+      
+
+{/* Hero Section */}
       <section className={styles.hero}>
-        {/* We can add a simple SVG circuit background here in the future if needed, but keeping it clean for now */}
-        <div className={styles.heroBackground} aria-hidden="true" />
+        {/* Background Image Overlay */}
+        <div className={styles.heroBgWrapper}>
+          <img src="/hero-graphic.png" className={styles.heroBgImg} alt="" />
+          <div className={styles.heroOverlay} />
+          <ParticleWave />
+        </div>
+
         <div className={styles.heroInner}>
-          <div className={styles.heroContent}>
-            <h1 className={styles.title}>
-              Build your own <br />
-              dolor sit amet, <br />
-              <span className={styles.titleHighlight}>& now together.</span>
-            </h1>
-            <p className={styles.description}>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod incididunt ut labore et dolore magna aliqua.
-            </p>
-            <div className={styles.actions}>
-              <Button as="a" href="/events" className={styles.btnPrimary} size="lg">
-                Learn more
-              </Button>
-              <Button as="a" href="/gallery" className={styles.btnSecondary} size="lg">
-                Learn more
-              </Button>
-            </div>
-          </div>
+          <h1 className={styles.heroTitle}>Dogfood 2026</h1>
+          <p className={styles.heroSubtitle}>The World's #1 Open-Source Hackathon Platform</p>
           
-          <div className={styles.heroGraphic}>
-            <img src="/hero-graphic.png" alt="3D Isometric Network" className={styles.heroImage} />
+          <div className={styles.searchContainer}>
+            <input 
+              type="text" 
+              placeholder="Enter your location or project data..." 
+              className={styles.searchInput} 
+            />
+            <button className={styles.searchBtn}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </button>
           </div>
         </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className={styles.stats}>
-        <div className={styles.statsGrid}>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>48 Hours</div>
-            <div className={styles.statLabel}>Continuous Coding</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>$50k+</div>
-            <div className={styles.statLabel}>Cash & Prizes</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>1200+</div>
-            <div className={styles.statLabel}>Innovators Participating</div>
-          </div>
-          <div className={styles.statItem}>
-            <div className={styles.statValue}>12</div>
-            <div className={styles.statLabel}>Tracks & Challenges<br/>(AI, Web3, etc)</div>
+        <div className={styles.floatingStatsWrapper}>
+          <div className={styles.floatingStatsInner}>
+            <div className={styles.statCardNew}>
+              <div className={styles.statIconWrapper}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div className={styles.statTitleNew}>Active Builders</div>
+              <div className={styles.statValueNew}>2,538</div>
+              <div className={styles.statChartMock} />
+            </div>
+
+            <div className={styles.statCardNew}>
+              <div className={styles.statIconWrapper}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <div className={styles.statTitleNew}>Projects Submitted</div>
+              <div className={styles.statValueNew}>1,878</div>
+              <div className={styles.statBarMock}>
+                <div style={{height: '40%'}}/><div style={{height: '60%'}}/><div style={{height: '80%'}}/><div style={{height: '50%'}}/><div style={{height: '100%'}}/>
+              </div>
+            </div>
+
+            <div className={styles.statCardNew}>
+              <div className={styles.statIconWrapper}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div className={styles.statTitleNew}>Time Remaining</div>
+              <div className={styles.statValueNew}>25.23h</div>
+              <div className={styles.statChartMock} />
+            </div>
+
+            <div className={styles.statCardNew}>
+              <div className={styles.statIconWrapper}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+              <div className={styles.statTitleNew}>Total Prize Pool</div>
+              <div className={styles.statValueNew}>$75.83k</div>
+              <div className={styles.statChartMock} />
+            </div>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className={styles.howItWorks}>
+      <section className={styles.howItWorks} >
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>How It Works</h2>
+          <h2 className={styles.sectionTitle}>How Dogfood works</h2>
         </div>
         <div className={styles.stepsGrid}>
           <div className={styles.stepItem}>
-            <div className={styles.stepHeader}>
-              1.
-              <div className={styles.stepIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <line x1="19" y1="8" x2="19" y2="14"></line>
-                  <line x1="22" y1="11" x2="16" y2="11"></line>
-                </svg>
-              </div>
-            </div>
-            <h3 className={styles.stepTitle}>Register & Form a Team</h3>
-            <p className={styles.stepDesc}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do dolore magna aliqua.</p>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '12px', color: 'var(--color-text-muted)' }}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+            <div className={styles.stepHeader}>01 — Join</div>
+            <p>Register for an event and find your team.</p>
           </div>
           <div className={styles.stepItem}>
-            <div className={styles.stepHeader}>
-              2.
-              <div className={styles.stepIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18h6"></path>
-                  <path d="M10 22h4"></path>
-                  <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 12 3a4.65 4.65 0 0 0-4.5 4.5c0 1.25.5 2.4 1.41 3.25.76.76 1.23 1.52 1.41 2.5"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 className={styles.stepTitle}>Choose Your Track & Ideate</h3>
-            <p className={styles.stepDesc}>Create across resources, collaborate with peers, a project.</p>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '12px', color: 'var(--color-accent)' }}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            <div className={styles.stepHeader}>02 — Build</div>
+            <p>Turn an idea into a working project.</p>
           </div>
           <div className={styles.stepItem}>
-            <div className={styles.stepHeader}>
-              3.
-              <div className={styles.stepIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="16 18 22 12 16 6"></polyline>
-                  <polyline points="8 6 2 12 8 18"></polyline>
-                </svg>
-              </div>
-            </div>
-            <h3 className={styles.stepTitle}>Build & Innovate</h3>
-            <p className={styles.stepDesc}>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed find collaborators.</p>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '12px', color: 'var(--color-accent)' }}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            <div className={styles.stepHeader}>03 — Submit</div>
+            <p>Submit your project before the deadline.</p>
           </div>
           <div className={styles.stepItem}>
-            <div className={styles.stepHeader}>
-              4.
-              <div className={styles.stepIcon}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-                  <path d="M4 22h16"></path>
-                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
-                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
-                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
-                </svg>
-              </div>
-            </div>
-            <h3 className={styles.stepTitle}>Submit & Win</h3>
-            <p className={styles.stepDesc}>Lorem ipsum & footprint & resources, est innovative development projects.</p>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '12px', color: 'var(--color-accent)' }}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <div className={styles.stepHeader}>04 — Showcase</div>
+            <p>Get discovered in the public project gallery.</p>
           </div>
         </div>
       </section>
 
-      {/* Success Stories Section */}
-      <section className={styles.successStories}>
+      {/* Tracks Section */}
+      <section className={styles.howItWorks} >
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Past Success Stories</h2>
+          <h2 className={styles.sectionTitle}>Explore the tracks</h2>
         </div>
-        <div className={styles.storiesGrid}>
-          
+        <div className={styles.stepsGrid}>
+          <div className={styles.stepItem} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', background: 'var(--color-surface)', boxShadow: 'var(--shadow-sm)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', color: 'var(--color-secondary)' }}><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>AI & Agents</h3>
+            <p>Build intelligent systems.</p>
+          </div>
+          <div className={styles.stepItem} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', background: 'var(--color-surface)', boxShadow: 'var(--shadow-sm)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', color: 'var(--color-secondary)' }}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>Web & Platforms</h3>
+            <p>Build products people can use.</p>
+          </div>
+          <div className={styles.stepItem} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', background: 'var(--color-surface)', boxShadow: 'var(--shadow-sm)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', color: 'var(--color-secondary)' }}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>FinTech</h3>
+            <p>Reimagine financial technology.</p>
+          </div>
+          <div className={styles.stepItem} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-6)', background: 'var(--color-surface)', boxShadow: 'var(--shadow-sm)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '16px', color: 'var(--color-secondary)' }}><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: 'var(--space-2)' }}>Sustainability</h3>
+            <p>Build for a better future.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Projects Section */}
+      <section className={styles.howItWorks} >
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>See what builders are shipping</h2>
+        </div>
+        <div className={styles.storiesGrid} style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <div className={styles.storyCard}>
-            <div className={styles.storyImageWrap}>
-              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80" alt="EcoLink UI" className={styles.storyImage} />
-            </div>
+            <div className={styles.storyImageWrap} style={{ height: '160px', overflow: 'hidden' }}><img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Project Thumbnail" /></div>
             <div className={styles.storyContent}>
-              <h3 className={styles.storyTitle}>Winner: EcoLink<br/>(Environmental Track)</h3>
-              <p className={styles.storyDesc}>Smart city optimizer (HackForge 2025)</p>
-              <Link href="/gallery/ecolink" className={styles.storyLink}>
-                View in gallery ↗
-              </Link>
+              <h3 className={styles.storyTitle}>HealthSphere</h3>
+              <p className={styles.storyDesc}>AI patient diagnostics app</p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#AI</span>
+                <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#React</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500 }}>Team Alpha</span>
+                <Link href="/gallery/1" className={styles.storyLink}>View →</Link>
+              </div>
             </div>
           </div>
-
           <div className={styles.storyCard}>
-            <div className={styles.storyImageWrap}>
-              <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80" alt="HealthSphere UI" className={styles.storyImage} />
-            </div>
+            <div className={styles.storyImageWrap} style={{ height: '160px', overflow: 'hidden' }}><img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Project Thumbnail" /></div>
             <div className={styles.storyContent}>
-              <h3 className={styles.storyTitle}>Winner: HealthSphere<br/>(Telehealth Track)</h3>
-              <p className={styles.storyDesc}>AI patient diagnostics app (HackForge 2025)</p>
-              <Link href="/gallery/healthsphere" className={styles.storyLink}>
-                View in gallery ↗
-              </Link>
+              <h3 className={styles.storyTitle}>ChainGuard</h3>
+              <p className={styles.storyDesc}>Decentralized security panel</p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#Web3</span>
+                <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#Rust</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500 }}>Blocksmiths</span>
+                <Link href="/gallery/2" className={styles.storyLink}>View →</Link>
+              </div>
             </div>
           </div>
-
           <div className={styles.storyCard}>
-            <div className={styles.storyImageWrap}>
-              <img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=600&q=80" alt="ChainGuard UI" className={styles.storyImage} />
-            </div>
+            <div className={styles.storyImageWrap} style={{ height: '160px', overflow: 'hidden' }}><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Project Thumbnail" /></div>
             <div className={styles.storyContent}>
-              <h3 className={styles.storyTitle}>Winner: ChainGuard<br/>(Blockchain Security Track)</h3>
-              <p className={styles.storyDesc}>Decentralized panel (HackForge 2025)</p>
-              <Link href="/gallery/chainguard" className={styles.storyLink}>
-                View in gallery ↗
-              </Link>
+              <h3 className={styles.storyTitle}>EcoTrack</h3>
+              <p className={styles.storyDesc}>Carbon footprint visualizer</p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <span style={{ fontSize: '12px', background: 'var(--color-accent-light)', color: 'var(--color-accent)', padding: '2px 8px', borderRadius: '12px' }}>#GreenTech</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500 }}>EcoDevs</span>
+                <Link href="/gallery/3" className={styles.storyLink}>View →</Link>
+              </div>
             </div>
           </div>
+        </div>
+        <div style={{ textAlign: 'center', marginTop: 'var(--space-8)' }}>
+          <Button as="a" href="/gallery" variant="secondary" size="lg">Explore all projects →</Button>
+        </div>
+      </section>
 
-          <div className={styles.storyCard}>
-            <div className={styles.storyImageWrap}>
-              <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80" alt="QuantumSim UI" className={styles.storyImage} />
-            </div>
-            <div className={styles.storyContent}>
-              <h3 className={styles.storyTitle}>Winner: QuantumSim<br/>(Quantum Track)</h3>
-              <p className={styles.storyDesc}>Quantum data visualizer (HackForge 2025)</p>
-              <Link href="/gallery/quantumsim" className={styles.storyLink}>
-                View in gallery ↗
-              </Link>
-            </div>
+      {/* Event Timeline Section */}
+      <section className={styles.howItWorks} >
+        <div className={styles.sectionHeader}>
+          <h2 className={styles.sectionTitle}>Dogfood 2026</h2>
+        </div>
+        <div className={styles.stepsGrid}>
+          <div className={styles.stepItem} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-success)', marginBottom: '8px' }}>● REGISTRATION</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>OPEN</div>
           </div>
-
+          <div className={styles.stepItem} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginBottom: '8px' }}>BUILD TIME</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>48 HOURS</div>
+          </div>
+          <div className={styles.stepItem} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-success)', marginBottom: '8px' }}>● SUBMISSIONS</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>OPEN</div>
+          </div>
+          <div className={styles.stepItem} style={{ textAlign: 'center', padding: 'var(--space-4)' }}>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-error)', marginBottom: '8px' }}>DEADLINE</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>OCT 18, 2026</div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className={styles.cta}>
-        <h2 className={styles.sectionTitle}>Are You Ready to Code?</h2>
+        <h2 className={styles.sectionTitle}>Ready to build?</h2>
         <p className={styles.sectionSubtitle} style={{ marginBottom: 'var(--space-8)' }}>
-          Access resources, collaborate with peers, and get to development.
+          Join the ultimate open-source hackathon platform.
         </p>
         <Button as="a" href="/register" className={styles.btnPrimary} size="lg">
-          Register Now
+          Join Dogfood 2026
         </Button>
       </section>
 
-      {/* Sponsors Section (Moved to above footer) */}
-      <section className={styles.sponsors}>
+      {/* Footer */}
+      <footer className={styles.footer}>
+        <div className={styles.sponsors} style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: 'var(--space-8)', marginBottom: 'var(--space-8)' }}>
+
         <div className={styles.sectionHeader} style={{ marginBottom: 'var(--space-8)' }}>
           <h2 className={styles.sectionTitle}>Our Valued Sponsors</h2>
         </div>
@@ -244,49 +288,35 @@ export default function HomePage() {
             </svg>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
-      <footer className={styles.footer}>
+      
+        </div>
         <div className={styles.footerInner}>
           <div className={styles.footerCol}>
-            <h4>Event Info</h4>
-            <Link href="/dates">Dates</Link>
-            <Link href="/schedule">Schedule</Link>
-            <Link href="/rules">Rules</Link>
+            <h4>DOGFOOD.DEV</h4>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '14px', marginTop: '8px' }}>Build. Ship. Showcase.</p>
+          </div>
+          <div className={styles.footerCol}>
+            <h4>Platform</h4>
+            <Link href="/events">Events</Link>
+            <Link href="/gallery">Gallery</Link>
+            <Link href="/leaderboard">Leaderboard</Link>
           </div>
           <div className={styles.footerCol}>
             <h4>Community</h4>
+            <Link href="/github">GitHub</Link>
             <Link href="/discord">Discord</Link>
-            <Link href="/mentors">Mentors</Link>
-            <Link href="/forums">Forums</Link>
+            <Link href="/x">X</Link>
           </div>
           <div className={styles.footerCol}>
             <h4>Resources</h4>
-            <Link href="/tools">Tools</Link>
-            <Link href="/docs">Docs</Link>
-            <Link href="/workshops">Workshops</Link>
-          </div>
-          <div className={styles.footerCol}>
-            <h4>Legal</h4>
-            <Link href="/tos">TOS</Link>
-            <Link href="/privacy">Privacy</Link>
-            <Link href="/conduct">Conduct</Link>
-          </div>
-          <div className={styles.footerCol} style={{ alignItems: 'flex-end' }}>
-            <div className={styles.footerSocial}>
-              {/* Twitter */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
-              {/* LinkedIn */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-              {/* GitHub */}
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-            </div>
+            <Link href="/docs">Documentation</Link>
+            <Link href="/faq">FAQs</Link>
+            <Link href="/conduct">Code of Conduct</Link>
           </div>
         </div>
         <div className={styles.footerBottom}>
-          <span>HACKFORGE 2026</span>
-          <span>© HackForge 2026</span>
+          <span>© 2026 Dogfood</span>
+          <span>Open-source hackathon platform</span>
         </div>
       </footer>
     </div>
