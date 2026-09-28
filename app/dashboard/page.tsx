@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import { getCurrentUser } from '@/lib/auth';
+import { getDbPool } from '@/lib/db';
 import PageContainer from '@/components/layout/PageContainer';
 import Link from 'next/link';
 import type { Metadata } from 'next';
@@ -6,7 +8,26 @@ import styles from './dashboard.module.css';
 
 export const metadata: Metadata = { title: 'Dashboard — Dogfood 2026' };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  let isParticipant = false;
+  let isOrganizer = false;
+  let isJudge = false;
+  let displayRole = user?.role || 'USER';
+
+  if (user) {
+    const pool = getDbPool();
+    const res = await pool.query('SELECT role FROM event_members WHERE user_id = $1', [user.id]);
+    const roles = res.rows.map(r => r.role);
+    isParticipant = roles.includes('PARTICIPANT');
+    isOrganizer = roles.includes('ORGANIZER');
+    isJudge = roles.includes('JUDGE');
+    
+    if (isOrganizer) displayRole = 'Organizer';
+    else if (isJudge) displayRole = 'Judge';
+    else if (isParticipant) displayRole = 'Participant';
+  }
+
   return (
     <PageContainer size="full">
       {/* Hero Section */}
@@ -29,17 +50,38 @@ export default function DashboardPage() {
             upcoming events, manage your submissions — and build the future.
           </p>
           
-          <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
-            <p>Authentication coming soon (Demo environment).</p>
-          </div>
+          {user ? (
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 600 }}>
+              <p>Welcome back, {user.name}! ({displayRole})</p>
+            </div>
+          ) : (
+            <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+              <p>Please log in to manage your submissions.</p>
+            </div>
+          )}
           
           <div className={styles.heroActions}>
-            <Link href="/login" className={styles.primaryBtn}>
+            <Link href="/events" className={styles.primaryBtn}>
               Explore Events ↓
             </Link>
-            <Link href="/login" className={styles.secondaryBtn}>
-              Submit Project →
-            </Link>
+            
+            {(!user || isParticipant) && (
+              <Link href="/events" className={styles.secondaryBtn}>
+                Submit Project →
+              </Link>
+            )}
+            
+            {user && isOrganizer && !isParticipant && (
+              <Link href="/organizer/events" className={styles.secondaryBtn}>
+                Manage Events →
+              </Link>
+            )}
+            
+            {user && isJudge && !isOrganizer && !isParticipant && (
+              <Link href="/events" className={styles.secondaryBtn}>
+                Review Submissions →
+              </Link>
+            )}
           </div>
         </div>
       </section>

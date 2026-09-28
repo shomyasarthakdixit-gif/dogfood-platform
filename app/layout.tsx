@@ -9,12 +9,16 @@ export const metadata: Metadata = {
     'An open-source, self-hostable hackathon submission and judging platform.',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getCurrentUser } from '@/lib/auth';
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="en">
       <body>
         <ToastProvider>
-          <Nav />
+          <Nav isLoggedIn={!!user} />
           {children}
           <footer
             style={{

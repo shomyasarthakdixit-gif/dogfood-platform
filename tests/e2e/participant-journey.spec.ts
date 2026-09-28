@@ -20,7 +20,7 @@ test.describe('Participant UI — Events', () => {
 
   test('dashboard shows auth notice', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page.getByText(/Authentication coming soon/)).toBeVisible();
+    await expect(page.getByText(/Please log in to manage your submissions/)).toBeVisible();
   });
 
 

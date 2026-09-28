@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import PageContainer from '@/components/layout/PageContainer';
 import { getEvents } from '@/lib/api/events';
 import type { Event } from '@/lib/types';
@@ -28,7 +29,9 @@ function StatusBadge({ status }: { status: Event['status'] }) {
   return <Badge variant="default" className={styles.badgeCompact}>⚪ Closed</Badge>;
 }
 
-export default function EventsPage() {
+export default async function EventsPage({ searchParams }: { searchParams: Promise<{ domain?: string }> }) {
+  const { domain = 'all' } = await searchParams;
+
   return (
     <PageContainer size="full">
       {/* Eco-themed Hero Header */}
@@ -53,10 +56,10 @@ export default function EventsPage() {
             </div>
 
             <div className={styles.categoryFilters}>
-              <button className={`${styles.filterPill} ${styles.filterPillActive}`}>All Events</button>
-              <button className={styles.filterPill}>AI & ML</button>
-              <button className={styles.filterPill}>Web Dev</button>
-              <button className={styles.filterPill}>Sustainability</button>
+              <Link href="/events?domain=all" className={`${styles.filterPill} ${domain === 'all' ? styles.filterPillActive : ''}`}>All Events</Link>
+              <Link href="/events?domain=ai" className={`${styles.filterPill} ${domain === 'ai' ? styles.filterPillActive : ''}`}>AI & ML</Link>
+              <Link href="/events?domain=web" className={`${styles.filterPill} ${domain === 'web' ? styles.filterPillActive : ''}`}>Web Dev</Link>
+              <Link href="/events?domain=sustainability" className={`${styles.filterPill} ${domain === 'sustainability' ? styles.filterPillActive : ''}`}>Sustainability</Link>
             </div>
 
             <div className={styles.sortContainer}>
@@ -71,7 +74,7 @@ export default function EventsPage() {
 
       <div className={styles.mainContainer}>
         <Suspense fallback={<EventsLoading />}>
-          <EventsList />
+          <EventsList domain={domain} />
         </Suspense>
 
         {/* Testimonial Section */}
@@ -95,13 +98,37 @@ export default function EventsPage() {
   );
 }
 
-async function EventsList() {
+async function EventsList({ domain }: { domain: string }) {
   const events = await getEvents();
-  const displayEvents = events && events.length > 0 ? events : [
+  let displayEvents = events && events.length > 0 ? events : [
     { id: 'evt-1', slug: 'dogfood-2026', name: 'Dogfood 2026', description: 'The premier hackathon for the Dogfood 2026 platform. Build amazing things with our new technology stack.', start_date: '2026-09-27T00:00:00Z', end_date: '2026-09-30T00:00:00Z', status: 'OPEN' },
     { id: 'evt-2', slug: 'winter-innovators', name: 'Dogfood Winter Innovators', description: 'Warm up your coding skills. A 48-hour sprint to build sustainable, eco-friendly tech solutions.', start_date: '2026-10-28T00:00:00Z', end_date: '2026-10-30T00:00:00Z', status: 'UPCOMING' },
     { id: 'evt-3', slug: 'ai-challenge', name: 'Global AI Challenge', description: 'Push the boundaries of artificial intelligence. Build agents, train models, and create the future.', start_date: '2026-11-27T00:00:00Z', end_date: '2026-12-04T00:00:00Z', status: 'UPCOMING' },
   ] as Event[];
+
+  if (domain !== 'all') {
+    displayEvents = displayEvents.filter(evt => {
+      const search = (evt.name + ' ' + (evt.description || '')).toLowerCase();
+      if (domain === 'ai') return search.includes('ai') || search.includes('artificial intelligence') || search.includes('agent');
+      if (domain === 'web') return search.includes('web') || search.includes('platform') || search.includes('tech stack') || search.includes('hackathon');
+      if (domain === 'sustainability') return search.includes('sustainabl') || search.includes('eco-friendly');
+      return true;
+    });
+  }
+
+  if (displayEvents.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--color-text-muted)' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--color-text)' }}>No events found</h3>
+        <p>There are no upcoming events matching your selected filter.</p>
+        <div style={{ marginTop: '1.5rem' }}>
+          <Button as="a" href="/events?domain=all" variant="primary">
+            View All Events
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.grid}>

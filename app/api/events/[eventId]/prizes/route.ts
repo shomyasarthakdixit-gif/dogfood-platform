@@ -21,6 +21,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
     if (!result.success) return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: result.error.issues[0].message } }, { status: 400 });
 
     const pool = getDbPool();
+    const eventRes = await pool.query('SELECT status FROM events WHERE id = $1', [eventId]);
+    if ((eventRes.rowCount ?? 0) > 0 && eventRes.rows[0].status === 'ARCHIVED') {
+      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Cannot modify an archived event' } }, { status: 400 });
+    }
     const insertRes = await pool.query(`
       INSERT INTO prizes (event_id, track_id, name, description, amount) VALUES ($1, $2, $3, $4, $5) RETURNING *
     `, [eventId, result.data.track_id || null, result.data.name, result.data.description, result.data.amount]);

@@ -12,11 +12,14 @@ const navLinks = [
   { href: '/events', label: 'Events' },
 ];
 
-export default function Nav() {
+export default function Nav({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  // Mock auth state for the UI demonstration
-  const isLoggedIn = true;
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/';
+  };
 
   return (
     <header>
@@ -45,9 +48,10 @@ export default function Nav() {
           <div className={styles.actions}>
             {isLoggedIn ? (
               <>
-                <Link href="/login" className={styles.link}>Login</Link>
                 <Link href="/dashboard" className={styles.link}>Dashboard</Link>
-                
+                <button onClick={handleLogout} className={styles.link} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', fontSize: 'inherit' }}>
+                  Logout
+                </button>
               </>
             ) : (
               <>

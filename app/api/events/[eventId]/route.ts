@@ -24,6 +24,24 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ eventI
     }
 
     const pool = getDbPool();
+    const eventRes = await pool.query('SELECT status FROM events WHERE id = $1', [eventId]);
+    if (eventRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
+    const currentStatus = eventRes.rows[0].status;
+    
+    if (currentStatus === 'ARCHIVED') {
+      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Cannot modify an archived event' } }, { status: 400 });
+    }
+
+    if (result.data.status && result.data.status !== currentStatus) {
+      const LIFECYCLE_ORDER = ['DRAFT', 'REGISTRATION', 'SUBMISSION', 'JUDGING', 'VOTING', 'RESULTS', 'ARCHIVED'];
+      const currentIndex = LIFECYCLE_ORDER.indexOf(currentStatus);
+      const nextIndex = LIFECYCLE_ORDER.indexOf(result.data.status);
+      
+      if (nextIndex !== currentIndex + 1) {
+        return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Invalid lifecycle transition. Only sequential forward transitions are allowed.' } }, { status: 400 });
+      }
+    }
+
     const updates = Object.entries(result.data).map(([k, _v], i) => `${k} = $${i+2}`);
     if (updates.length === 0) return NextResponse.json({ status: 'ok' });
 
@@ -44,6 +62,15 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ event
   if (error) return error;
 
   const pool = getDbPool();
+  
+  const eventRes = await pool.query('SELECT status FROM events WHERE id = $1', [eventId]);
+  if (eventRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
+  
+  const currentStatus = eventRes.rows[0].status;
+  if (currentStatus !== 'DRAFT') {
+    return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Only DRAFT events can be deleted. Use ARCHIVED status for progressed events.' } }, { status: 400 });
+  }
+
   await pool.query('DELETE FROM events WHERE id = $1', [eventId]);
   return NextResponse.json({ status: 'ok' });
 }
