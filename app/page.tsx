@@ -5,7 +5,7 @@ import styles from './home.module.css';
 import ParticleWave from '@/components/ui/ParticleWave';
 
 export const metadata = {
-  title: 'HackForge 2026',
+  title: 'Dogfood Platform',
   description: 'Hack. Code. Disrupt.',
 };
 
