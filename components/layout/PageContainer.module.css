@@ -1,0 +1,18 @@
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+  flex: 1;
+  width: 100%;
+}
+
+.sm { max-width: 640px; }
+.md { max-width: 768px; }
+.lg { max-width: var(--max-width); }
+.xl { max-width: 1400px; }
+.full { max-width: 100%; padding: 0; }
+
+@media (max-width: 768px) {
+  .container { padding: var(--space-8) var(--space-4); }
+  .full { padding: 0; }
+}

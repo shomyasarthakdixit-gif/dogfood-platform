@@ -1,0 +1,248 @@
+.heroSection {
+  position: relative;
+  background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+  padding: 100px 24px 60px;
+  text-align: center;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.bgCircle1, .bgCircle2 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(167, 139, 250, 0.15); /* Purple tint */
+  z-index: 0;
+}
+
+.bgCircle1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: 10%;
+}
+
+.bgCircle2 {
+  width: 600px;
+  height: 600px;
+  bottom: -200px;
+  right: -5%;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 10;
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pillBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(167, 139, 250, 0.2);
+  color: var(--color-accent);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-6);
+  border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.heroTitle {
+  font-size: 4.5rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.02em;
+}
+
+.heroTitleHighlight {
+  color: var(--color-accent);
+}
+
+.heroSubtitle {
+  font-size: 1.25rem;
+  color: #4b5563;
+  margin-bottom: var(--space-8);
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.primaryBtn {
+  background: var(--color-accent);
+  color: #fff;
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.primaryBtn:hover {
+  opacity: 0.9;
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: var(--color-accent);
+  padding: 12px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s;
+  border: none;
+  cursor: pointer;
+}
+.secondaryBtn:hover {
+  background: rgba(167, 139, 250, 0.1);
+}
+
+/* Stats Bar */
+.statsBar {
+  background: #ffffff;
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.statItem {
+  flex: 1;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  border-right: 1px solid var(--color-border);
+}
+.statItem:last-child {
+  border-right: none;
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Projects Section */
+.projectsSection {
+  padding: 80px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.sectionSubtitle {
+  font-size: 1.125rem;
+  color: #6b7280;
+  margin-bottom: 48px;
+}
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  text-align: left;
+}
+
+.projectCard {
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  height: 300px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+.projectCard:hover {
+  transform: translateY(-4px);
+}
+
+.projectImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.projectTag {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  background: var(--color-accent);
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.projectOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  padding: 40px 24px 24px;
+  color: #fff;
+}
+
+.projectTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.projectTeam {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .heroTitle { font-size: 3rem; }
+  .statsBar { flex-direction: column; }
+  .statItem { border-right: none; border-bottom: 1px solid var(--color-border); }
+  .projectsGrid { grid-template-columns: 1fr; }
+}

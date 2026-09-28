@@ -5,6 +5,8 @@ describe('Database Integration', () => {
   const pool = getDbPool();
 
   afterAll(async () => {
+    await pool.query("DELETE FROM events WHERE slug IN ('event1', 'event2')");
+    await pool.query("DELETE FROM votes");
     await pool.end();
   });
 

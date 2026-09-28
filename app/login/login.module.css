@@ -1,0 +1,151 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Left Side - Form */
+.formSide {
+  width: 40%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  position: relative;
+}
+
+.brand {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  margin-bottom: auto;
+}
+.brand span {
+  color: var(--color-accent);
+}
+
+.formWrapper {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: var(--color-accent);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  margin-bottom: 48px;
+}
+
+.inputGroup {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.inputLabel {
+  display: none;
+}
+
+.input {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 0;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: transparent;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-bottom-color: var(--color-accent);
+}
+
+.inputIcon {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  width: 18px;
+  height: 18px;
+}
+
+.submitBtn {
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 999px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 32px;
+  margin-bottom: 64px;
+  display: inline-block;
+}
+.submitBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.4);
+}
+
+.forgotLink {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+.forgotLink span {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+/* Right Side - Illustration */
+.imageSide {
+  width: 60%;
+  background: linear-gradient(135deg, #f3e8ff 0%, #e0e7ff 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.illustration {
+  width: 80%;
+  max-width: 800px;
+  height: auto;
+  position: relative;
+  z-index: 10;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* Background blob */
+.blob {
+  position: absolute;
+  width: 800px;
+  height: 800px;
+  background: #ffffff;
+  border-radius: 50%;
+  right: -200px;
+  bottom: -200px;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .container { flex-direction: column; }
+  .formSide { width: 100%; min-height: 100vh; justify-content: center; }
+  .imageSide { display: none; }
+}

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+process.env.DATABASE_URL = 'postgresql://postgres:postgres@localhost:5433/dogfood?schema=public';
 import { resolve } from 'path'
 
 export default defineConfig({

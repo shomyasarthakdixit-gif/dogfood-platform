@@ -1,0 +1,34 @@
+ACCEPTANCE REPORT
+=================
+
+T1 CORE
+[x] authentication/sessions (Implemented via HTTP-only cookies and bcrypt)
+[x] participant/judge/organizer/admin roles (RBAC implemented at route level)
+[x] event creation/configuration (Schema exists, CRUD API available)
+[x] tracks/prizes (Schema and API support)
+[x] team formation/invitations (Implemented with secure token-based invites)
+[x] submission draft/edit/submit (Lifecycle states implemented)
+[x] deadline enforcement (Strict submission_end checking on API)
+[x] public gallery/search (Implemented in frontend and API with deterministic sorting)
+
+T2 JUDGING
+[x] judge management (Profiles, event-specific roles)
+[x] judge assignment (Matrix mapping logic available)
+[x] assignment isolation (Judges can only score assigned submissions)
+[x] configurable rubric (Dynamic criteria support)
+[x] weighted scoring (Server-side calculation)
+[x] evaluation lifecycle (Draft -> Submitted)
+[x] normalization (Judge-level mean/stdev Z-score calculation implemented)
+[x] results (Aggregated and normalized endpoint available)
+[x] CSV export (Implemented via /api/events/[eventId]/results/export)
+
+T3 PUBLIC
+[x] community voting (Likes/Votes on public submissions)
+[x] anonymous voter identity (Signed token-based tracking)
+[x] duplicate prevention (PostgreSQL UNIQUE constraints on tokens/ips)
+[x] voting window (Enforced by event.voting_start and voting_end)
+[x] rate limiting (DB-backed IP/Token rate limiting)
+[x] comments (Anonymous and authenticated commenting)
+[x] randomized gallery (Seed-based randomization based on event title)
+[x] result protection (Results hidden until explicit authorization/event completion)
+[x] audit/security controls (Audit logs table records sensitive actions)
