@@ -441,7 +441,7 @@ async function EventDetail({ eventId }: { eventId: string }) {
               <Button as="a" href="/dashboard" variant="secondary" fullWidth size="md">
                 My Dashboard
               </Button>
-              {(!userRole && !isRegistered) && event.lifecycle_status === 'REGISTRATION' && (
+              {(!userRole && !isRegistered) && ['REGISTRATION', 'TEAM_FORMATION', 'SUBMISSION'].includes(event.lifecycle_status || '') && (
                 <JoinEventButton eventId={event.id} />
               )}
               {isRegistered && (

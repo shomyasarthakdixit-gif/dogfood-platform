@@ -28,7 +28,7 @@ async function seed() {
 
     // Judges
     const judges = [];
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 6; i++) {
       const res = await pool.query(`
         INSERT INTO users (email, name, role, password_hash) 
         VALUES ($1, $2, 'USER', $3)
@@ -39,7 +39,7 @@ async function seed() {
 
     // Participants
     const participants = [];
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 5; i++) {
       const res = await pool.query(`
         INSERT INTO users (email, name, role, password_hash) 
         VALUES ($1, $2, 'USER', $3)
@@ -51,7 +51,7 @@ async function seed() {
     // Event
     const resEvent = await pool.query(`
       INSERT INTO events (slug, name, description, start_date, end_date, status, voting_start, voting_end)
-      VALUES ('dogfood-2026', 'Dogfood 2026', 'The ultimate hackathon challenge.', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days', 'VOTING', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days')
+      VALUES ('dogfood-2026', 'Dogfood 2026', 'The ultimate hackathon challenge.', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days', 'SUBMISSION', NOW() - INTERVAL '1 day', NOW() + INTERVAL '2 days')
       ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, status = EXCLUDED.status, voting_start = EXCLUDED.voting_start, voting_end = EXCLUDED.voting_end RETURNING id;
     `);
     const eventId = resEvent.rows[0].id;
@@ -100,7 +100,6 @@ async function seed() {
     await pool.query(`INSERT INTO team_members (team_id, user_id, role) VALUES ($1, $2, 'MEMBER') ON CONFLICT DO NOTHING`, [teams[1], participants[3]]);
 
     await pool.query(`INSERT INTO team_members (team_id, user_id, role) VALUES ($1, $2, 'LEADER') ON CONFLICT DO NOTHING`, [teams[2], participants[4]]);
-    await pool.query(`INSERT INTO team_members (team_id, user_id, role) VALUES ($1, $2, 'MEMBER') ON CONFLICT DO NOTHING`, [teams[2], participants[5]]);
 
     // Submissions
     const subNames = ['Alpha Project', 'Beta Project', 'Gamma Project'];
@@ -168,6 +167,9 @@ async function seed() {
       { j: 0, scores: [ [8, 9], [7, 8] ] }, // Judge 1 scores high
       { j: 1, scores: [ [4, 5], [5, 6] ] }, // Judge 2 scores low
       { j: 2, scores: [ [6, 7], [9, 9] ] }, // Judge 3 scores mid-high
+      { j: 3, scores: [ [7, 8], [6, 7] ] }, // Judge 4
+      { j: 4, scores: [ [5, 6], [7, 8] ] }, // Judge 5
+      { j: 5, scores: [ [8, 8], [9, 8] ] }, // Judge 6
     ];
 
     let assignIdx = 0;
