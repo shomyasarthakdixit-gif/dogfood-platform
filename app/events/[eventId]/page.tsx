@@ -9,6 +9,7 @@ import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import JoinEventButton from '@/components/ui/JoinEventButton';
+import AcceptInvitationClient from '@/app/dashboard/AcceptInvitationClient';
 import type { Event, Track, Prize } from '@/lib/types';
 import type { Metadata } from 'next';
 import styles from './event-detail.module.css';
@@ -292,6 +293,7 @@ async function EventDetail({ eventId }: { eventId: string }) {
   let userRole = null;
   let userTeam = null;
   let userSubmission = null;
+  let pendingInvitations: { id: string, team_name: string, inviter_name: string }[] = [];
   
   let isRegistered = false;
 
@@ -319,6 +321,18 @@ async function EventDetail({ eventId }: { eventId: string }) {
           `, [userTeam.id, event.id]);
           if (subRes.rowCount !== null && subRes.rowCount > 0) {
             userSubmission = subRes.rows[0];
+          }
+        } else {
+          // Only fetch invitations if the user is NOT in a team for this event
+          const pendingRes = await pool.query(`
+            SELECT ti.id, t.name as team_name, u.name as inviter_name
+            FROM team_invitations ti
+            JOIN teams t ON t.id = ti.team_id
+            JOIN users u ON u.id = ti.inviter_id
+            WHERE ti.invitee_id = $1 AND t.event_id = $2 AND ti.status = 'PENDING' AND ti.expires_at > NOW()
+          `, [user.id, event.id]);
+          if (pendingRes.rowCount !== null && pendingRes.rowCount > 0) {
+            pendingInvitations = pendingRes.rows as any;
           }
         }
       }
@@ -449,6 +463,22 @@ async function EventDetail({ eventId }: { eventId: string }) {
                   <div style={{ padding: '8px', background: 'var(--color-surface)', borderRadius: '4px', textAlign: 'center', marginBottom: '8px', border: '1px solid var(--color-success)' }}>
                     <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>✓ Registered</span>
                   </div>
+                  
+                  {pendingInvitations.length > 0 && (
+                    <div style={{ padding: '12px', background: 'var(--color-surface)', borderRadius: '4px', border: '1px solid var(--color-primary)', marginBottom: '16px' }}>
+                      <strong style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem' }}>Pending Invitations</strong>
+                      {pendingInvitations.map(inv => (
+                        <div key={inv.id} style={{ marginBottom: '12px', fontSize: '0.85rem' }}>
+                          <div><strong>{inv.team_name}</strong></div>
+                          <div style={{ color: 'var(--color-text-muted)', marginBottom: '8px' }}>Invited by {inv.inviter_name}</div>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <AcceptInvitationClient invitationId={inv.id} action="accept" />
+                            <AcceptInvitationClient invitationId={inv.id} action="decline" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   
                   {(!userTeam) ? (
                     <Button as="a" href={`/teams/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
