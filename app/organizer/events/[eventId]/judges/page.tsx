@@ -187,12 +187,12 @@ export default function ManageJudgesPage({ params }: { params: Promise<{ eventId
           <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Add Judge</h2>
           <form onSubmit={handleAddJudge} style={{ display: 'grid', gap: '1rem' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '0.5rem' }}>User ID</label>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>User ID or Email</label>
               <input 
                 type="text" 
                 value={newJudgeUserId} 
                 onChange={(e) => setNewJudgeUserId(e.target.value)} 
-                placeholder="UUID of the user" 
+                placeholder="UUID or email address" 
                 required 
                 style={{ width: '100%', padding: '0.5rem', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text)' }} 
               />

@@ -12,17 +12,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
     const body = await req.json();
     const result = createJudgeSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: (result.error as unknown as { errors: { message: string }[] }).errors[0].message } }, { status: 400 });
+      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: result.error.issues[0].message } }, { status: 400 });
     }
 
-    const { user_id, background } = result.data;
+    let { user_id, background } = result.data;
     const pool = getDbPool();
 
     // Check if user exists
-    const userRes = await pool.query('SELECT id FROM users WHERE id = $1', [user_id]);
+    let userRes;
+    if (user_id.includes('@')) {
+      userRes = await pool.query('SELECT id FROM users WHERE email = $1', [user_id]);
+    } else {
+      userRes = await pool.query('SELECT id FROM users WHERE id = $1', [user_id]);
+    }
+    
     if (userRes.rowCount === 0) {
       return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'User not found' } }, { status: 404 });
     }
+    
+    user_id = userRes.rows[0].id;
 
     // Check if already a judge
     const existing = await pool.query('SELECT id FROM judge_profiles WHERE event_id = $1 AND user_id = $2', [eventId, user_id]);

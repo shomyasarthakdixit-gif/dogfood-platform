@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createJudgeSchema = z.object({
-  user_id: z.string().uuid(),
+  user_id: z.string().min(1),
   background: z.string().optional(),
 });
 
