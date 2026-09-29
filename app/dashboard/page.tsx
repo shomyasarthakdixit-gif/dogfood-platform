@@ -170,7 +170,7 @@ export default async function DashboardPage() {
             )}
             
             {user && isJudge && !isOrganizer && !isParticipant && (
-              <Link href="/events" className={styles.secondaryBtn}>
+              <Link href="#judging" className={styles.secondaryBtn}>
                 Review Submissions →
               </Link>
             )}
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
 
       {/* Judging Section */}
       {isJudge && (
-        <section className={styles.projectsSection} style={{ marginTop: '3rem' }}>
+        <section id="judging" className={styles.projectsSection} style={{ marginTop: '3rem' }}>
           <h2 className={styles.sectionTitle}>
             ⚖️ My Judging Events
           </h2>
