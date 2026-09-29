@@ -41,7 +41,7 @@ export default function JudgingEvaluationPage({ params }: { params: Promise<{ ev
   }, [resolvedParams.assignmentId]);
 
   if (loading) return <PageContainer><p>Loading...</p></PageContainer>;
-  if (error) return <PageContainer><Card padding="md" style={{ borderColor: 'var(--color-error)', color: 'var(--color-error)' }}>{error}</Card></PageContainer>;
+  if (error) return <PageContainer><Card padding="md" className="error-card">{error}</Card></PageContainer>;
   if (!assignment) return <PageContainer><p>Not found</p></PageContainer>;
 
   const handleSubmit = async (submit: boolean) => {
