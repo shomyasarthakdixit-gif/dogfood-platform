@@ -288,19 +288,19 @@ export default function HomePage() {
             <h4>Platform</h4>
             <Link href="/events">Events</Link>
 
-            <Link href="/leaderboard">Leaderboard</Link>
+            <Link href="#">Leaderboard</Link>
           </div>
           <div className={styles.footerCol}>
             <h4>Community</h4>
-            <Link href="/github">GitHub</Link>
-            <Link href="/discord">Discord</Link>
-            <Link href="/x">X</Link>
+            <Link href="#">GitHub</Link>
+            <Link href="#">Discord</Link>
+            <Link href="#">X</Link>
           </div>
           <div className={styles.footerCol}>
             <h4>Resources</h4>
-            <Link href="/docs">Documentation</Link>
-            <Link href="/faq">FAQs</Link>
-            <Link href="/conduct">Code of Conduct</Link>
+            <Link href="#">Documentation</Link>
+            <Link href="#">FAQs</Link>
+            <Link href="#">Code of Conduct</Link>
           </div>
         </div>
         <div className={styles.footerBottom}>
