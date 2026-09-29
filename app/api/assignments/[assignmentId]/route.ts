@@ -10,10 +10,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ assignme
   const pool = getDbPool();
   
   const res = await pool.query(`
-    SELECT ja.*, jp.user_id as judge_user_id, s.event_id 
+    SELECT ja.*, jp.user_id as judge_user_id, s.event_id,
+           s.title as submission_title, s.description as submission_description, s.url as submission_url,
+           t.name as team_name
     FROM judge_assignments ja
     JOIN judge_profiles jp ON ja.judge_id = jp.id
     JOIN submissions s ON ja.submission_id = s.id
+    LEFT JOIN teams t ON s.team_id = t.id
     WHERE ja.id = $1
   `, [assignmentId]);
 
@@ -29,7 +32,30 @@ export async function GET(req: Request, { params }: { params: Promise<{ assignme
     return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'Not authorized to view this assignment' } }, { status: 403 });
   }
 
-  return NextResponse.json({ assignment });
+  // Fetch criteria
+  const critRes = await pool.query(`
+    SELECT c.* 
+    FROM rubric_criteria c
+    JOIN rubrics r ON c.rubric_id = r.id
+    WHERE r.event_id = $1
+  `, [assignment.event_id]);
+
+  // Fetch evaluation and existing scores
+  const evalRes = await pool.query('SELECT id, status FROM evaluations WHERE assignment_id = $1', [assignmentId]);
+  let existingScores: any[] = [];
+  let evaluationStatus = null;
+  if (evalRes.rowCount && evalRes.rowCount > 0) {
+    evaluationStatus = evalRes.rows[0].status;
+    const scoresRes = await pool.query('SELECT criterion_id, score FROM evaluation_scores WHERE evaluation_id = $1', [evalRes.rows[0].id]);
+    existingScores = scoresRes.rows;
+  }
+
+  return NextResponse.json({ 
+    assignment, 
+    criteria: critRes.rows, 
+    existingScores,
+    evaluationStatus
+  });
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ assignmentId: string }> }) {
