@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getDbPool } from '@/lib/db';
-import { requireTeamLeader, hashToken } from '@/lib/auth';
+import { requireTeamMember, hashToken } from '@/lib/auth';
 import { invitationRequestSchema } from '@/lib/validation/teams';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ teamId: string }> }) {
   const teamId = (await params).teamId;
-  const { error } = await requireTeamLeader(teamId);
+  const { error } = await requireTeamMember(teamId);
   if (error) return error;
 
   const pool = getDbPool();
@@ -22,7 +22,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ teamId:
 
 export async function POST(req: Request, { params }: { params: Promise<{ teamId: string }> }) {
   const teamId = (await params).teamId;
-  const { user, error } = await requireTeamLeader(teamId);
+  const { user, error } = await requireTeamMember(teamId);
   if (error) return error;
 
   try {
@@ -55,10 +55,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ teamId:
     }
     const inviteeId = inviteeRes.rows[0].id;
 
-    // Ensure not already in team
-    const inTeamRes = await pool.query('SELECT id FROM team_members WHERE team_id = $1 AND user_id = $2', [teamId, inviteeId]);
+    // Ensure not already in any team for this event
+    const inTeamRes = await pool.query(`
+      SELECT tm.id FROM team_members tm
+      JOIN teams t ON t.id = tm.team_id
+      WHERE tm.user_id = $1 AND t.event_id = $2
+    `, [inviteeId, eventId]);
     if (inTeamRes.rowCount !== null && inTeamRes.rowCount > 0) {
-      return NextResponse.json({ error: { code: 'CONFLICT', message: 'User is already in this team' } }, { status: 409 });
+      return NextResponse.json({ error: { code: 'CONFLICT', message: 'User is already in a team for this event' } }, { status: 409 });
     }
 
     // See if pending invitation already exists
