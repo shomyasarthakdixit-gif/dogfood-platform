@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const baseEventSchema = z.object({
   name: z.string().min(2),
-  slug: z.string().min(2).regex(/^[a-z0-9-]+$/),
+  slug: z.string().min(2).regex(/^[a-z0-9-]+$/, { message: 'Slug can only contain lowercase letters, numbers, and hyphens.' }),
   description: z.string().optional(),
   status: z.enum(['DRAFT', 'REGISTRATION', 'SUBMISSION', 'JUDGING', 'VOTING', 'RESULTS', 'ARCHIVED']).default('DRAFT'),
   start_date: z.string().datetime(),

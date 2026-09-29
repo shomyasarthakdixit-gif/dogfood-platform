@@ -10,9 +10,21 @@ export const metadata: Metadata = {
 };
 
 import { getCurrentUser } from '@/lib/auth';
+import { getDbPool } from '@/lib/db';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  
+  let isOrganizer = false;
+  if (user) {
+    if (user.role === 'ADMIN') {
+      isOrganizer = true;
+    } else {
+      const pool = getDbPool();
+      const res = await pool.query("SELECT 1 FROM event_members WHERE user_id = $1 AND role = 'ORGANIZER' LIMIT 1", [user.id]);
+      isOrganizer = (res.rowCount ?? 0) > 0;
+    }
+  }
 
   return (
     <html lang="en">

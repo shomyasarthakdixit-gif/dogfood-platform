@@ -1,8 +1,7 @@
 import { query } from '@/lib/db';
 import { Team, TeamMember, User } from '@/lib/types';
 import { mockTeams } from './mockData';
-
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 export async function getTeamById(teamId: string): Promise<Team | null> {
   if (USE_MOCK) return mockTeams.find(t => t.id === teamId) || mockTeams[0];

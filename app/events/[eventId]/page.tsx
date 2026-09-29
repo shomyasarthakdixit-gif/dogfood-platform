@@ -1,13 +1,19 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
+import { unstable_noStore as noStore } from 'next/cache';
 import PageContainer from '@/components/layout/PageContainer';
 import { getEventById, getTop10Projects } from '@/lib/api/events';
+import { getCurrentUser } from '@/lib/auth';
+import { getDbPool } from '@/lib/db';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import JoinEventButton from '@/components/ui/JoinEventButton';
 import type { Event, Track, Prize } from '@/lib/types';
 import type { Metadata } from 'next';
 import styles from './event-detail.module.css';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
@@ -113,6 +119,50 @@ function EventTimeline({ event }: { event: Event }) {
   );
 }
 
+function ParticipantTimelineState({ userSubmission, isRegistered }: { userSubmission: any, isRegistered: boolean }) {
+  if (!isRegistered) {
+    return (
+      <div className={styles.timelineItem} style={{ marginTop: '16px' }}>
+        <div className={styles.timelineDot} style={{ background: 'transparent', border: '2px solid var(--color-border)' }} aria-hidden="true" />
+        <div className={styles.timelineContent}>
+          <span className={styles.timelineLabel} style={{ color: 'var(--color-text-light)' }}>○ Not registered</span>
+        </div>
+      </div>
+    );
+  }
+  if (!userSubmission) {
+    return (
+      <div className={styles.timelineItem} style={{ marginTop: '16px' }}>
+        <div className={styles.timelineDot} style={{ background: 'transparent', border: '2px solid var(--color-border)' }} aria-hidden="true" />
+        <div className={styles.timelineContent}>
+          <span className={styles.timelineLabel} style={{ color: 'var(--color-text-light)' }}>○ Submission pending</span>
+        </div>
+      </div>
+    );
+  }
+  if (userSubmission.status === 'SUBMITTED') {
+    return (
+      <div className={styles.timelineItem} style={{ marginTop: '16px' }}>
+        <div className={[styles.timelineDot, styles.done].join(' ')} aria-hidden="true" />
+        <div className={styles.timelineContent}>
+          <span className={styles.timelineLabel}>✓ Submission completed</span>
+          {userSubmission.submitted_at && (
+            <span className={styles.timelineDate}>{new Date(userSubmission.submitted_at).toLocaleString()}</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className={styles.timelineItem} style={{ marginTop: '16px' }}>
+      <div className={styles.timelineDot} style={{ background: 'var(--color-warning)' }} aria-hidden="true" />
+      <div className={styles.timelineContent}>
+        <span className={styles.timelineLabel} style={{ color: 'var(--color-warning)' }}>• Submission draft saved</span>
+      </div>
+    </div>
+  );
+}
+
 function TrackCard({ track }: { track: Track }) {
   return (
     <div className={styles.trackCard}>
@@ -152,8 +202,42 @@ function PrizeCard({ prize }: { prize: Prize }) {
   );
 }
 
-function StatusBanner({ event }: { event: Event }) {
-  if (event.status === 'OPEN') {
+function StatusBanner({ event, userRole, userSubmission, isRegistered }: { event: Event, userRole: string | null, userSubmission: any, isRegistered: boolean }) {
+  if (event.lifecycle_status === 'REGISTRATION') {
+    let message = userRole === 'ORGANIZER'
+      ? 'Registration is currently open.'
+      : isRegistered
+        ? '✓ You are registered for this event.'
+        : 'Registration is open. Register to participate.';
+        
+    return (
+      <div className={styles.bannerOpen}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        {message}
+      </div>
+    );
+  }
+  
+  if (event.status === 'OPEN' || event.lifecycle_status === 'SUBMISSION') {
+    let message = userRole === 'ORGANIZER'
+      ? 'Submissions are currently open.'
+      : 'Submissions are currently open.';
+      
+    if (userRole !== 'ORGANIZER' && userRole !== 'JUDGE' && isRegistered) {
+      if (!userSubmission) {
+        message = 'Submissions are currently open. Submit your project before the deadline.';
+      } else if (userSubmission.status === 'SUBMITTED') {
+        message = 'Your team has successfully submitted this project.';
+      } else if (userSubmission.status === 'DRAFT' && userSubmission.submitted_at) {
+        message = 'Your submission has been withdrawn. You can edit and resubmit before the deadline.';
+      } else if (userSubmission.status === 'DRAFT') {
+        message = 'You have a saved draft. Complete and submit it before the deadline.';
+      }
+    }
+
     return (
       <div className={styles.bannerOpen}>
         <svg
@@ -168,7 +252,7 @@ function StatusBanner({ event }: { event: Event }) {
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
-        Submissions are currently open. Join this event and submit your project.
+        {message}
       </div>
     );
   }
@@ -200,8 +284,46 @@ function getImageForEventId(id: string) {
 }
 
 async function EventDetail({ eventId }: { eventId: string }) {
+  noStore();
   const event = await getEventById(eventId);
   if (!event) notFound();
+
+  const user = await getCurrentUser();
+  let userRole = null;
+  let userTeam = null;
+  let userSubmission = null;
+  
+  let isRegistered = false;
+
+  if (user) {
+    if (user.role === 'ADMIN') {
+      userRole = 'ORGANIZER';
+    } else {
+      const pool = getDbPool();
+      const res = await pool.query('SELECT role FROM event_members WHERE event_id = $1 AND user_id = $2', [event.id, user.id]);
+      if (res.rowCount !== null && res.rowCount > 0) {
+        userRole = res.rows[0].role;
+        if (userRole === 'PARTICIPANT') isRegistered = true;
+      }
+      
+      if (isRegistered) {
+        const teamRes = await pool.query(`
+          SELECT t.id FROM teams t
+          JOIN team_members tm ON t.id = tm.team_id
+          WHERE t.event_id = $1 AND tm.user_id = $2
+        `, [event.id, user.id]);
+        if (teamRes.rowCount !== null && teamRes.rowCount > 0) {
+          userTeam = teamRes.rows[0];
+          const subRes = await pool.query(`
+            SELECT id, status, submitted_at FROM submissions WHERE team_id = $1 AND event_id = $2 LIMIT 1
+          `, [userTeam.id, event.id]);
+          if (subRes.rowCount !== null && subRes.rowCount > 0) {
+            userSubmission = subRes.rows[0];
+          }
+        }
+      }
+    }
+  }
 
   return (
     <article>
@@ -259,7 +381,7 @@ async function EventDetail({ eventId }: { eventId: string }) {
         )}
       </div>
 
-      <StatusBanner event={event} />
+      <StatusBanner event={event} userRole={userRole} userSubmission={userSubmission} isRegistered={isRegistered} />
 
       <div className={styles.body}>
         {/* Main column */}
@@ -305,6 +427,12 @@ async function EventDetail({ eventId }: { eventId: string }) {
           <div className={[styles.sidebarCard, styles.timelineCard].join(' ')}>
             <h2 className={styles.sidebarTitle}>Timeline</h2>
             <EventTimeline event={event} />
+            {(!userRole || userRole === 'PARTICIPANT') && (
+              <div style={{ marginTop: '16px', borderTop: '1px solid var(--color-border)', paddingTop: '16px' }}>
+                <h3 className={styles.sidebarTitle} style={{ fontSize: '14px', marginBottom: '8px' }}>Your Status</h3>
+                <ParticipantTimelineState userSubmission={userSubmission} isRegistered={isRegistered} />
+              </div>
+            )}
           </div>
 
           <div className={[styles.sidebarCard, styles.linksCard].join(' ')}>
@@ -313,9 +441,79 @@ async function EventDetail({ eventId }: { eventId: string }) {
               <Button as="a" href="/dashboard" variant="secondary" fullWidth size="md">
                 My Dashboard
               </Button>
-              <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
-                Submit a project
-              </Button>
+              {(!userRole && !isRegistered) && event.lifecycle_status === 'REGISTRATION' && (
+                <JoinEventButton eventId={event.id} />
+              )}
+              {isRegistered && (
+                <>
+                  <div style={{ padding: '8px', background: 'var(--color-surface)', borderRadius: '4px', textAlign: 'center', marginBottom: '8px', border: '1px solid var(--color-success)' }}>
+                    <span style={{ color: 'var(--color-success)', fontWeight: 'bold' }}>✓ Registered</span>
+                  </div>
+                  
+                  {(!userTeam) ? (
+                    <Button as="a" href={`/teams/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
+                      Create Team
+                    </Button>
+                  ) : (
+                    <Button as="a" href={`/teams/${userTeam.id}`} variant="secondary" fullWidth size="md">
+                      My Team
+                    </Button>
+                  )}
+
+                  {!userSubmission && userTeam && (
+                    <div style={{ marginTop: 'var(--space-2)' }}>
+                      <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
+                        Submit a project
+                      </Button>
+                    </div>
+                  )}
+                  {userSubmission && userSubmission.status === 'DRAFT' && (
+                    <div style={{ marginTop: 'var(--space-2)' }}>
+                      <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
+                        {userSubmission.submitted_at ? 'Submit project' : 'Continue submission'}
+                      </Button>
+                    </div>
+                  )}
+                  {userSubmission && (
+                    <>
+                      {userSubmission.status === 'DRAFT' && (
+                        <div style={{ marginTop: 'var(--space-2)' }}>
+                          <Button as="a" href={`/submissions/${userSubmission.id}`} variant="secondary" fullWidth size="md">
+                            View submission
+                          </Button>
+                        </div>
+                      )}
+                      {userSubmission.status === 'SUBMITTED' && (
+                        <>
+                          <div style={{ marginTop: 'var(--space-2)' }}>
+                            <Button as="a" href={`/submissions/${userSubmission.id}`} variant="secondary" fullWidth size="md">
+                              View submission
+                            </Button>
+                          </div>
+                          <div style={{ marginTop: 'var(--space-2)' }}>
+                            <Button as="a" href={`/submissions/new?eventId=${event.id}`} variant="primary" fullWidth size="md">
+                              Edit submission
+                            </Button>
+                          </div>
+                          <div style={{ marginTop: 'var(--space-2)' }}>
+                            <form method="POST" action={`/api/submissions/${userSubmission.id}/withdraw-form`}>
+                              <input type="hidden" name="eventId" value={event.id} />
+                              <Button type="submit" variant="secondary" fullWidth size="md" style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}>
+                                Withdraw submission
+                              </Button>
+                            </form>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+              {(userRole === 'ORGANIZER') && (
+                <Button as="a" href={`/organizer/events/${event.id}`} variant="primary" fullWidth size="md">
+                  Manage Event
+                </Button>
+              )}
             </div>
           </div>
         </aside>

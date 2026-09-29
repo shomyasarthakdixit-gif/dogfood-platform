@@ -51,9 +51,9 @@ async function SubmissionContent({ submissionId }: { submissionId: string }) {
         </div>
 
         <div className={styles.headerActions}>
-          {submission.status === 'DRAFT' && (
-            <Button as="a" href={`/submissions/${submission.id}/edit`} variant="primary" size="sm">
-              Continue editing
+          {(submission.status === 'DRAFT' || (submission.status === 'SUBMITTED' && (!submission.event_submission_end || new Date(submission.event_submission_end) > new Date()))) && (
+            <Button as="a" href={`/submissions/new?eventId=${submission.event_id}`} variant="primary" size="sm">
+              {submission.status === 'DRAFT' ? 'Continue editing' : 'Edit submission'}
             </Button>
           )}
         </div>

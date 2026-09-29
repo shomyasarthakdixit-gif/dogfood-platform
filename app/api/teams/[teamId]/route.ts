@@ -37,3 +37,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ teamId
     return NextResponse.json({ error: { code: 'SERVER_ERROR', message: 'Internal error' } }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request, { params }: { params: Promise<{ teamId: string }> }) {
+  const teamId = (await params).teamId;
+  const { error } = await requireTeamLeader(teamId);
+  if (error) return error;
+
+  try {
+    const pool = getDbPool();
+    await pool.query('DELETE FROM teams WHERE id = $1', [teamId]);
+    return new NextResponse(null, { status: 204 });
+  } catch (err: unknown) {
+    console.error(err);
+    return NextResponse.json({ error: { code: 'SERVER_ERROR', message: 'Internal error' } }, { status: 500 });
+  }
+}

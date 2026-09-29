@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
-import { requirePlatformAdmin } from '@/lib/auth';
+import { requireEventCreator } from '@/lib/auth';
 import { eventSchema } from '@/lib/validation/events';
 
 export async function GET(_req: Request) {
@@ -10,7 +10,7 @@ export async function GET(_req: Request) {
 }
 
 export async function POST(req: Request) {
-  const { user, error } = await requirePlatformAdmin();
+  const { user, error } = await requireEventCreator();
   if (error) return error;
 
   try {

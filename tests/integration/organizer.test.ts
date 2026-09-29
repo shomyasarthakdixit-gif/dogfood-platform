@@ -25,6 +25,10 @@ describe('Organizer Management and Lifecycle Safeguards', () => {
   let eventArchivedId: string;
   
   beforeAll(async () => {
+    // Cleanup any aborted previous runs
+    await pool.query("DELETE FROM users WHERE email LIKE '%_org@test.com'");
+    await pool.query("DELETE FROM events WHERE slug IN ('draft-evt', 'active-evt', 'archived-evt', 'new-evt', 'temp-delete-evt', 'date-test')");
+
     // Setup test users
     const r1 = await pool.query("INSERT INTO users (email, name, role) VALUES ('admin_org@test.com', 'A', 'ADMIN') RETURNING id");
     adminId = r1.rows[0].id;
@@ -55,7 +59,7 @@ describe('Organizer Management and Lifecycle Safeguards', () => {
 
   afterAll(async () => {
     await pool.query("DELETE FROM users WHERE email LIKE '%_org@test.com'");
-    await pool.query("DELETE FROM events WHERE slug IN ('draft-evt', 'active-evt', 'archived-evt', 'new-evt')");
+    await pool.query("DELETE FROM events WHERE slug IN ('draft-evt', 'active-evt', 'archived-evt', 'new-evt', 'temp-delete-evt', 'date-test')");
     await pool.end();
   });
 
@@ -69,8 +73,8 @@ describe('Organizer Management and Lifecycle Safeguards', () => {
     mockCookies.get.mockReturnValue({ value: rawToken });
   }
 
-  test('POST /api/events requires ADMIN', async () => {
-    await mockUserSession(organizerId); // Normal user
+  test('POST /api/events requires ADMIN or ORGANIZER', async () => {
+    await mockUserSession(participantId); // Normal user (not an organizer)
     const req = new Request('http://localhost/api/events', {
       method: 'POST',
       body: JSON.stringify({ slug: 'new-evt', name: 'New', start_date: new Date().toISOString(), end_date: new Date(Date.now() + 86400000).toISOString() })
@@ -106,11 +110,16 @@ describe('Organizer Management and Lifecycle Safeguards', () => {
     expect(res.status).toBe(200);
   });
 
-  test('DELETE /api/events/[eventId] organizer CANNOT delete REGISTRATION event', async () => {
+  test('DELETE /api/events/[eventId] organizer CAN delete REGISTRATION event', async () => {
     await mockUserSession(organizerId);
-    const req = new Request(`http://localhost/api/events/${eventActiveId}`, { method: 'DELETE' });
-    const res = await deleteEvent(req, { params: Promise.resolve({ eventId: eventActiveId }) });
-    expect(res.status).toBe(400); // Bad Request (lifecycle protection)
+    // Create a disposable event for this test so we don't break subsequent tests
+    const e2 = await pool.query("INSERT INTO events (slug, name, status, start_date, end_date) VALUES ('temp-delete-evt', 'Temp', 'REGISTRATION', NOW(), NOW() + interval '1 day') RETURNING id");
+    const tempId = e2.rows[0].id;
+    await pool.query("INSERT INTO event_members (event_id, user_id, role) VALUES ($1, $2, 'ORGANIZER')", [tempId, organizerId]);
+    
+    const req = new Request(`http://localhost/api/events/${tempId}`, { method: 'DELETE' });
+    const res = await deleteEvent(req, { params: Promise.resolve({ eventId: tempId }) });
+    expect(res.status).toBe(200); // Because we allowed deletion of any event
   });
 
   test('PATCH /api/events/[eventId] organizer CANNOT edit ARCHIVED event', async () => {

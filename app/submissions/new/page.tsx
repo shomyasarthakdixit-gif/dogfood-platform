@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import PageContainer from '@/components/layout/PageContainer';
@@ -67,6 +67,30 @@ function NewSubmissionForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [confirmSubmit, setConfirmSubmit] = useState(false);
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  const [isLoadingExisting, setIsLoadingExisting] = useState(true);
+
+  useEffect(() => {
+    if (eventId) {
+      fetch(`/api/events/${eventId}/submissions/me`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.submission) {
+            setSubmissionId(data.submission.id);
+            setTitle(data.submission.title || '');
+            setDescription(data.submission.description || '');
+            setUrl(data.submission.url || '');
+            if (data.submission.status === 'SUBMITTED' && data.submission.event_submission_end && new Date(data.submission.event_submission_end) < new Date()) {
+              router.push(`/submissions/${data.submission.id}`);
+            }
+          }
+        })
+        .finally(() => setIsLoadingExisting(false));
+    } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoadingExisting(false);
+    }
+  }, [eventId, router]);
 
   const descChars = description.length;
   const MAX_DESC = 2000;
@@ -86,8 +110,10 @@ function NewSubmissionForm() {
     }
     setSaveState('saving-draft');
     try {
-      const res = await fetch(`/api/events/${eventId}/submissions`, {
-        method: 'POST',
+      const isEdit = !!submissionId;
+      const urlPath = isEdit ? `/api/submissions/${submissionId}` : `/api/events/${eventId}/submissions`;
+      const res = await fetch(urlPath, {
+        method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
@@ -97,13 +123,13 @@ function NewSubmissionForm() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setErrors({ form: data.error ?? 'Failed to save draft.' });
+        setErrors({ form: data.error?.message ?? 'Failed to save draft.' });
         setSaveState('error');
         return;
       }
       setSaveState('saved');
       addToast('Draft saved successfully.', 'success');
-      router.push(`/submissions/${data.data.id}`);
+      router.push(`/submissions/${isEdit ? submissionId : data.submission?.id || data.data?.id}`);
     } catch {
       setErrors({ form: 'Something went wrong. Please try again.' });
       setSaveState('error');
@@ -119,9 +145,11 @@ function NewSubmissionForm() {
     }
     setSaveState('submitting');
     try {
-      // First create the submission as DRAFT, then immediately submit it
-      const createRes = await fetch(`/api/events/${eventId}/submissions`, {
-        method: 'POST',
+      const isEdit = !!submissionId;
+      let currentSubmissionId = submissionId;
+      
+      const res = await fetch(isEdit ? `/api/submissions/${submissionId}` : `/api/events/${eventId}/submissions`, {
+        method: isEdit ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
@@ -129,39 +157,55 @@ function NewSubmissionForm() {
           url: url.trim() || undefined,
         }),
       });
-      const createData = await createRes.json();
-      if (!createRes.ok) {
-        setErrors({ form: createData.error ?? 'Failed to create submission.' });
+      const data = await res.json();
+      if (!res.ok) {
+        setErrors({ form: data.error?.message ?? 'Failed to create/update submission.' });
         setSaveState('error');
         return;
       }
-      const submissionId = createData.data.id;
-      const submitRes = await fetch(`/api/submissions/${submissionId}/submit`, {
-        method: 'POST',
-      });
-      const submitData = await submitRes.json();
-      if (!submitRes.ok) {
-        setErrors({ form: submitData.error ?? 'Failed to submit project.' });
-        setSaveState('error');
-        return;
+      if (!isEdit) {
+        currentSubmissionId = data.submission?.id || data.data?.id;
       }
+      
+      // If it's already submitted, the PATCH update is sufficient
+      if (data.submission?.status !== 'SUBMITTED' && data.data?.status !== 'SUBMITTED') {
+        const submitRes = await fetch(`/api/submissions/${currentSubmissionId}/submit`, {
+          method: 'POST',
+        });
+        const submitData = await submitRes.json();
+        if (!submitRes.ok) {
+          setErrors({ form: submitData.error?.message ?? 'Failed to submit project.' });
+          setSaveState('error');
+          return;
+        }
+      }
+      
       setSaveState('submitted');
       addToast('Project submitted successfully!', 'success');
-      router.push(`/submissions/${submissionId}`);
+      router.refresh();
+      router.push(`/submissions/${currentSubmissionId}`);
     } catch {
       setErrors({ form: 'Something went wrong. Please try again.' });
       setSaveState('error');
     }
   }
 
-  const isLoading = saveState === 'saving-draft' || saveState === 'submitting';
+  const isLoading = saveState === 'saving-draft' || saveState === 'submitting' || isLoadingExisting;
+
+  if (isLoadingExisting) {
+    return (
+      <PageContainer size="md">
+        <div style={{ textAlign: 'center', padding: 'var(--space-8)' }}>Loading...</div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer size="md">
       <div className={styles.header}>
-        <h1 className={styles.title}>Submit Your Project</h1>
+        <h1 className={styles.title}>{submissionId ? 'Edit Your Project' : 'Submit Your Project'}</h1>
         <p className={styles.subtitle}>
-          Share what you&apos;ve built. You can save a draft first and come back to edit it.
+          {submissionId ? 'Update your project details below.' : 'Share what you\'ve built. You can save a draft first and come back to edit it.'}
         </p>
       </div>
 
@@ -232,10 +276,8 @@ function NewSubmissionForm() {
               size="md"
               disabled={isLoading}
               onClick={() => {
-                if (validateForm({ title, description, url }) && Object.keys(errors).length === 0) {
+                if (validate()) {
                   setConfirmSubmit(true);
-                } else {
-                  validate();
                 }
               }}
             >

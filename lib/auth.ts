@@ -113,6 +113,20 @@ export async function requirePlatformAdmin() {
   return { user, error: null };
 }
 
+export async function requireEventCreator() {
+  const { user, error } = await requireUser();
+  if (error) return { user: null, error };
+  if (user.role === 'ADMIN') return { user, error: null };
+
+  const pool = getDbPool();
+  const res = await pool.query("SELECT 1 FROM event_members WHERE user_id = $1 AND role = 'ORGANIZER' LIMIT 1", [user.id]);
+  if (res.rowCount && res.rowCount > 0) {
+    return { user, error: null };
+  }
+
+  return { user: null, error: authErrorResponse('FORBIDDEN', 'Access denied.') };
+}
+
 export async function requireEventRole(eventId: string, requiredRole: 'ORGANIZER' | 'JUDGE' | 'PARTICIPANT') {
   const { user, error } = await requireUser();
   if (error) return { user: null, eventRole: null, error };

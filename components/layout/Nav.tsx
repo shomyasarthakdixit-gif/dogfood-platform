@@ -16,9 +16,10 @@ export default function Nav({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
-  const handleLogout = async () => {
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
     await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/';
+    window.location.replace('/login');
   };
 
   return (

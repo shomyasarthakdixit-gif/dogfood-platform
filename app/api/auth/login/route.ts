@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getDbPool } from '@/lib/db';
 import { loginSchema } from '@/lib/validation/auth';
 import { verifyPassword, createSession, authErrorResponse } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(req: Request) {
   try {
@@ -13,6 +14,11 @@ export async function POST(req: Request) {
     }
     
     const { email, password } = result.data;
+
+    const { allowed } = await checkRateLimit('login', email, 500, 60000);
+    if (!allowed) {
+      return NextResponse.json({ error: { code: 'RATE_LIMITED', message: 'Too many login attempts. Please try again later.' } }, { status: 429 });
+    }
     
     const pool = getDbPool();
     const userRes = await pool.query('SELECT id, password_hash FROM users WHERE email = $1', [email]);

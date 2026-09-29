@@ -24,6 +24,12 @@ export interface Event {
   description: string | null;
   start_date: string;
   end_date: string;
+  registration_start?: string;
+  registration_end?: string;
+  submission_start?: string;
+  submission_end?: string;
+  required_judges?: number;
+  judges_per_submission?: number;
   created_at: string;
   status?: EventStatus;
   lifecycle_status?: string;
@@ -91,6 +97,7 @@ export interface Submission {
   technologies?: string[];
   repo_url?: string | null;
   demo_url?: string | null;
+  event_submission_end?: string;
 }
 
 export interface ApiResponse<T> {

@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import styles from './login.module.css';
 
 export default function LoginClient() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isNewlyRegistered = searchParams.get('registered') === '1';
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,8 +34,7 @@ export default function LoginClient() {
         throw new Error(errorMessage);
       }
 
-      router.push('/dashboard');
-      router.refresh();
+      window.location.replace('/dashboard');
     } catch (err) {
       if (err instanceof Error) setError(err.message);
       else setError('An unknown error occurred');
@@ -54,6 +56,12 @@ export default function LoginClient() {
             <h1 className={styles.title}>Login</h1>
             <p className={styles.subtitle}>& start building your hackathon project.</p>
             
+            {isNewlyRegistered && !error && (
+              <div style={{ color: 'var(--color-success)', marginBottom: '1rem', background: 'rgba(0, 200, 0, 0.1)', padding: '0.75rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 500 }}>
+                Account created successfully. Please sign in.
+              </div>
+            )}
+
             {error && (
               <div style={{ color: 'var(--color-error)', marginBottom: '1rem', background: 'rgba(239, 68, 68, 0.1)', padding: '0.75rem', borderRadius: '8px', fontSize: '0.875rem' }}>
                 {error}
@@ -109,7 +117,10 @@ export default function LoginClient() {
               </button>
             </form>
             
-            <div>
+            <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', textAlign: 'center' }}>
+              <Link href="/register" className={styles.forgotLink} style={{ display: 'inline', fontWeight: 600 }}>
+                Don't have an account? <span>Sign up</span>
+              </Link>
               <Link href="#" className={styles.forgotLink}>
                 Forgot Password? <span>Click Here</span>
               </Link>

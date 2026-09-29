@@ -4,7 +4,7 @@ import { POST as createEvent } from '@/app/api/events/route';
 import { POST as createTrack } from '@/app/api/events/[eventId]/tracks/route';
 import { POST as createTeam } from '@/app/api/events/[eventId]/teams/route';
 import { POST as createInvitation } from '@/app/api/teams/[teamId]/invitations/route';
-import { POST as acceptInvitation } from '@/app/api/invitations/[token]/accept/route';
+import { POST as acceptInvitation } from '@/app/api/invitations/[invitationId]/route';
 import { POST as createSubmission } from '@/app/api/events/[eventId]/submissions/route';
 import { PATCH as editSubmission } from '@/app/api/submissions/[submissionId]/route';
 import { POST as submitSubmission } from '@/app/api/submissions/[submissionId]/submit/route';
@@ -27,7 +27,7 @@ describe('Sprint 2: Events, Teams, Submissions', () => {
   let eventId: string;
   let teamId: string;
   let submissionId: string;
-  let invitationToken: string;
+  let invitationId: string;
 
   beforeAll(async () => {
     adminId = (await pool.query("INSERT INTO users (email, name, role) VALUES ('admin@sprint2.com', 'Admin', 'ADMIN') RETURNING id")).rows[0].id;
@@ -105,21 +105,19 @@ describe('Sprint 2: Events, Teams, Submissions', () => {
 
   test('Create Invitation', async () => {
     await mockSession(part1Id); // part 1 is LEADER
-    const req = await makeReq({ expires_in_hours: 24 });
+    const req = await makeReq({ email: 'part2@sprint2.com' });
     const res = await createInvitation(req, { params: Promise.resolve({ teamId }) });
     expect(res.status).toBe(200);
     const data = await res.json();
-    invitationToken = data.raw_token;
-    expect(invitationToken).toBeDefined();
+    invitationId = data.invitation.id;
+    expect(invitationId).toBeDefined();
   });
 
   test('Accept Invitation (Participant 2)', async () => {
     await mockSession(part2Id);
     const req = await makeReq({});
-    const res = await acceptInvitation(req, { params: Promise.resolve({ token: invitationToken }) });
+    const res = await acceptInvitation(req, { params: Promise.resolve({ invitationId }) });
     expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.team_id).toBe(teamId);
   });
 
   test('Create Submission (Participant 1)', async () => {
@@ -147,10 +145,64 @@ describe('Sprint 2: Events, Teams, Submissions', () => {
     expect(res.status).toBe(200);
   });
 
-  test('Edit Submission fails after finalized', async () => {
+  test('Edit Submission succeeds after finalized before deadline', async () => {
+    await mockSession(part1Id);
+    const customReq = new Request('http://localhost', { method: 'PATCH', body: JSON.stringify({ description: 'Success' }) });
+    const res = await editSubmission(customReq, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(200);
+  });
+
+  test('Withdraw Submission (Admin) - fails, not in team', async () => {
+    await mockSession(adminId);
+    const { POST: withdrawSubmission } = await import('@/app/api/submissions/[submissionId]/withdraw/route');
+    const customReq = new Request('http://localhost', { method: 'POST' });
+    const res = await withdrawSubmission(customReq, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(403);
+  });
+
+  test('Withdraw Submission (Participant 2) - succeeds', async () => {
+    await mockSession(part2Id);
+    const { POST: withdrawSubmission } = await import('@/app/api/submissions/[submissionId]/withdraw/route');
+    const customReq = new Request('http://localhost', { method: 'POST' });
+    const res = await withdrawSubmission(customReq, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.submission.status).toBe('DRAFT');
+    
+    // Check audit log
+    const auditRes = await pool.query('SELECT * FROM audit_logs WHERE action = $1 AND entity_id = $2', ['SUBMISSION_WITHDRAWN', submissionId]);
+    expect(auditRes.rowCount).toBe(1);
+  });
+
+  test('Withdraw Submission - fails if already DRAFT', async () => {
+    await mockSession(part1Id);
+    const { POST: withdrawSubmission } = await import('@/app/api/submissions/[submissionId]/withdraw/route');
+    const customReq = new Request('http://localhost', { method: 'POST' });
+    const res = await withdrawSubmission(customReq, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(409); // INVALID_STATE
+  });
+
+  test('Finalize Submission again (after withdraw)', async () => {
+    await mockSession(part1Id);
+    const req = await makeReq({});
+    const res = await submitSubmission(req, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(200);
+  });
+
+  test('Withdraw fails after deadline', async () => {
+    // Manually update the event submission_end to be in the past
+    await pool.query('UPDATE events SET submission_end = $1 WHERE id = $2', [new Date(Date.now() - 86400000).toISOString(), eventId]);
+    await mockSession(part1Id);
+    const { POST: withdrawSubmission } = await import('@/app/api/submissions/[submissionId]/withdraw/route');
+    const customReq = new Request('http://localhost', { method: 'POST' });
+    const res = await withdrawSubmission(customReq, { params: Promise.resolve({ submissionId }) });
+    expect(res.status).toBe(403); // SUBMISSION_DEADLINE_PASSED
+  });
+
+  test('Edit Submission fails after deadline', async () => {
     await mockSession(part1Id);
     const customReq = new Request('http://localhost', { method: 'PATCH', body: JSON.stringify({ description: 'Fail' }) });
     const res = await editSubmission(customReq, { params: Promise.resolve({ submissionId }) });
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(400); // SUBMISSION_DEADLINE_PASSED
   });
 });

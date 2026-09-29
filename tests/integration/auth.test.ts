@@ -1,4 +1,4 @@
-import { expect, test, describe, afterAll, vi, beforeEach } from 'vitest'
+import { expect, test, describe, afterAll, beforeAll, vi, beforeEach } from 'vitest'
 import { getDbPool } from '@/lib/db'
 import { POST as registerHandler } from '@/app/api/auth/register/route'
 import { POST as loginHandler } from '@/app/api/auth/login/route'
@@ -17,6 +17,10 @@ vi.mock('next/headers', () => ({
 
 describe('Authentication & Sessions', () => {
   const pool = getDbPool();
+
+  beforeAll(async () => {
+    await pool.query("DELETE FROM users WHERE email LIKE '%test.com'");
+  });
 
   afterAll(async () => {
     await pool.query("DELETE FROM users WHERE email LIKE '%test.com'");

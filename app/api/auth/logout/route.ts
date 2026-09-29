@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { deleteSession } from '@/lib/auth';
@@ -9,6 +10,8 @@ export async function POST() {
   if (token) {
     await deleteSession(token);
   }
+  cookieStore.delete('dogfood_session');
   
   return NextResponse.json({ status: 'ok' });
 }
+

@@ -10,6 +10,14 @@ async function seed() {
 
     const demoPasswordHash = await bcrypt.hash('password123', 10);
 
+    // Admin
+    const resAdmin = await pool.query(`
+      INSERT INTO users (email, name, role, password_hash) 
+      VALUES ('admin@dogfood.local', 'Platform Admin', 'ADMIN', $1)
+      ON CONFLICT (email) DO UPDATE SET name = EXCLUDED.name, role = EXCLUDED.role, password_hash = EXCLUDED.password_hash RETURNING id;
+    `, [demoPasswordHash]);
+    const adminId = resAdmin.rows[0].id;
+
     // Organizer
     const resOrg = await pool.query(`
       INSERT INTO users (email, name, role, password_hash) 

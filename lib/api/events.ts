@@ -7,7 +7,7 @@ const USE_MOCK = false; // Temporary override for UI preview
 export async function getEvents(): Promise<Event[]> {
   if (USE_MOCK) return mockEvents;
   const result = await query(`
-    SELECT id, slug, name, description, start_date, end_date, created_at, status
+    SELECT id, slug, name, description, start_date, end_date, created_at, status, registration_start, registration_end, submission_start, submission_end, required_judges, judges_per_submission
     FROM events
     ORDER BY created_at DESC
   `);
@@ -16,8 +16,12 @@ export async function getEvents(): Promise<Event[]> {
 
 export async function getEventById(id: string): Promise<Event | null> {
   if (USE_MOCK) return mockEvents.find(e => e.id === id) || mockEvents[0];
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    return getEventBySlug(id);
+  }
   const result = await query(
-    `SELECT id, slug, name, description, start_date, end_date, created_at, status FROM events WHERE id = $1`,
+    `SELECT id, slug, name, description, start_date, end_date, created_at, status, registration_start, registration_end, submission_start, submission_end, required_judges, judges_per_submission FROM events WHERE id = $1`,
     [id]
   );
   if (result.rows.length === 0) return null;
@@ -32,7 +36,7 @@ export async function getEventById(id: string): Promise<Event | null> {
 export async function getEventBySlug(slug: string): Promise<Event | null> {
   if (USE_MOCK) return mockEvents.find(e => e.slug === slug) || mockEvents[0];
   const result = await query(
-    `SELECT id, slug, name, description, start_date, end_date, created_at, status FROM events WHERE slug = $1`,
+    `SELECT id, slug, name, description, start_date, end_date, created_at, status, registration_start, registration_end, submission_start, submission_end, required_judges, judges_per_submission FROM events WHERE slug = $1`,
     [slug]
   );
   if (result.rows.length === 0) return null;
@@ -72,6 +76,12 @@ function rowToEvent(row: Record<string, unknown>): Event {
     description: row.description as string | null,
     start_date: row.start_date as string,
     end_date: row.end_date as string,
+    registration_start: row.registration_start as string | undefined,
+    registration_end: row.registration_end as string | undefined,
+    submission_start: row.submission_start as string | undefined,
+    submission_end: row.submission_end as string | undefined,
+    required_judges: row.required_judges as number | undefined,
+    judges_per_submission: row.judges_per_submission as number | undefined,
     created_at: row.created_at as string,
     status,
     lifecycle_status: row.status as string,

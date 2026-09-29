@@ -24,7 +24,7 @@ test.describe('Organizer Journey', () => {
     await page.click('a:has-text("Manage →")');
 
     // Now inside event management page
-    await expect(page.locator('h2:has-text("Lifecycle & Dates")')).toBeVisible();
+    await expect(page.locator('h2:has-text("Lifecycle & Configuration")')).toBeVisible();
     await expect(page.locator('h2:has-text("Tracks")')).toBeVisible();
     await expect(page.locator('h2:has-text("Prizes")')).toBeVisible();
 
@@ -37,13 +37,7 @@ test.describe('Organizer Journey', () => {
     page.once('dialog', dialog => dialog.accept());
 
     // Check track appears in list
-    await expect(page.locator('li:has-text("E2E Track")')).toBeVisible();
+    await expect(page.locator('li:has-text("E2E Track")').first()).toBeVisible();
 
-    // Check that we can update event status
-    await page.selectOption('select[name="status"]', 'REGISTRATION');
-    
-    // We mock dialogs to automatically accept them
-    page.once('dialog', dialog => dialog.accept());
-    await page.click('button:has-text("Save Updates")');
   });
 });

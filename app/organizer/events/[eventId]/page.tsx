@@ -22,6 +22,18 @@ interface EventData {
   judging_end?: string;
   voting_start?: string;
   voting_end?: string;
+  required_judges: number;
+  judges_per_submission: number;
+}
+
+interface EventMetrics {
+  participants: number;
+  teams: number;
+  teamMembers: number;
+  drafts: number;
+  submissions: number;
+  judges: number;
+  assignments: number;
 }
 
 interface TrackData {
@@ -44,6 +56,7 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
   const eventId = unwrappedParams.eventId;
   
   const [event, setEvent] = useState<EventData | null>(null);
+  const [metrics, setMetrics] = useState<EventMetrics | null>(null);
   const [tracks, setTracks] = useState<TrackData[]>([]);
   const [prizes, setPrizes] = useState<PrizeData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +84,7 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
         const evData = await evRes.json();
         if (!evRes.ok) throw new Error(evData.error?.message || 'Failed to load event');
         setEvent(evData.event);
+        setMetrics(evData.metrics || null);
 
         const trData = await trRes.json();
         setTracks(trData.tracks || []);
@@ -96,7 +110,10 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
       ]);
       
       const evData = await evRes.json();
-      if (evRes.ok) setEvent(evData.event);
+      if (evRes.ok) {
+        setEvent(evData.event);
+        setMetrics(evData.metrics || null);
+      }
 
       const trData = await trRes.json();
       setTracks(trData.tracks || []);
@@ -207,17 +224,9 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
     <PageContainer>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Manage: {event.name}</h1>
-        {event.status === 'DRAFT' ? (
-          <Button variant="secondary" onClick={handleDeleteEvent} style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}>
-            Delete Event
-          </Button>
-        ) : (
-          <div title="Only DRAFT events can be deleted">
-            <Button variant="secondary" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-              Delete Event
-            </Button>
-          </div>
-        )}
+        <Button variant="secondary" onClick={handleDeleteEvent} style={{ borderColor: 'var(--color-danger)', color: 'var(--color-danger)' }}>
+          Delete Event
+        </Button>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
@@ -225,8 +234,42 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
         {/* Left Column: Event Details & Lifecycle */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ padding: '1.5rem', background: 'var(--color-bg-card)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Event Overview</h2>
+              {metrics && (
+                <div style={{ display: 'grid', gap: '0.75rem', fontSize: '0.875rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Registered Participants</span>
+                    <strong>{metrics.participants}</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Teams (Members)</span>
+                    <strong>{metrics.teams} ({metrics.teamMembers})</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Submissions (Drafts)</span>
+                    <strong>{metrics.submissions} ({metrics.drafts})</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid var(--color-border)' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Configured Judges</span>
+                    <strong>{metrics.judges} / {event.required_judges} required</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>Assignments</span>
+                    <strong>{metrics.assignments} complete</strong>
+                  </div>
+                </div>
+              )}
+              <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <Button as="a" href={`/organizer/events/${event.id}/participants`} variant="secondary" size="sm">Manage Participants</Button>
+                <Button as="a" href={`/organizer/events/${event.id}/judges`} variant="secondary" size="sm">Manage Judges & Assignments</Button>
+              </div>
+            </div>
+          </div>
+
           <div style={{ padding: '1.5rem', background: 'var(--color-bg-card)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Lifecycle & Dates</h2>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Lifecycle & Configuration</h2>
             <form onSubmit={handleUpdateEvent} style={{ display: 'grid', gap: '1rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>Status</label>
@@ -271,6 +314,17 @@ export default function ManageEventPage({ params }: { params: Promise<{ eventId:
                 <div>
                   <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Submission End</label>
                   <input name="submission_end" type="datetime-local" defaultValue={formatForInput(event.submission_end)} style={{ width: '100%', padding: '0.5rem', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text)' }} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Required Judges</label>
+                  <input name="required_judges" type="number" min="1" defaultValue={event.required_judges} style={{ width: '100%', padding: '0.5rem', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text)' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Judges Per Submission</label>
+                  <input name="judges_per_submission" type="number" min="1" defaultValue={event.judges_per_submission} style={{ width: '100%', padding: '0.5rem', background: 'var(--color-bg-input)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text)' }} />
                 </div>
               </div>
 

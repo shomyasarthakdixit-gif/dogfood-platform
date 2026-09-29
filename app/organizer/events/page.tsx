@@ -2,8 +2,12 @@ import { getCurrentUser } from '@/lib/auth';
 import { getDbPool } from '@/lib/db';
 import PageContainer from '@/components/layout/PageContainer';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import DeleteEventButton from '@/components/ui/DeleteEventButton';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Manage Events — Organizer' };
 
@@ -40,11 +44,9 @@ export default async function OrganizerEventsPage() {
     <PageContainer>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Manage Events</h1>
-        {user.role === 'ADMIN' && (
-          <Link href="/organizer/events/new" style={{ padding: '0.5rem 1rem', background: 'var(--color-primary)', color: 'white', borderRadius: '4px', textDecoration: 'none' }}>
-            + Create Event
-          </Link>
-        )}
+        <Button as="a" href="/organizer/events/new" variant="primary">
+          + Create Event
+        </Button>
       </div>
 
       <div style={{ display: 'grid', gap: '1rem' }}>
@@ -59,9 +61,12 @@ export default async function OrganizerEventsPage() {
                   <span>{new Date(evt.start_date).toLocaleDateString()} - {new Date(evt.end_date).toLocaleDateString()}</span>
                 </div>
               </div>
-              <Link href={`/organizer/events/${evt.id}`} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: 'var(--color-text)', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
-                Manage →
-              </Link>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <DeleteEventButton eventId={evt.id} />
+                <Link href={`/organizer/events/${evt.id}`} style={{ padding: '0.5rem 1rem', background: 'rgba(255,255,255,0.1)', color: 'var(--color-text)', borderRadius: '4px', textDecoration: 'none', border: '1px solid var(--color-border)' }}>
+                  Manage →
+                </Link>
+              </div>
             </div>
           </div>
         ))}

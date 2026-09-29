@@ -22,7 +22,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
     try {
       await client.query('BEGIN');
 
-      // 1. Get all submitted submissions
+      // 1. Get Event Configuration
+      const eventRes = await client.query('SELECT required_judges FROM events WHERE id = $1', [eventId]);
+      const requiredJudges = eventRes.rows[0].required_judges;
+
+      // 2. Get all submitted submissions
       const subsRes = await client.query('SELECT id, team_id FROM submissions WHERE event_id = $1 AND status = $2 ORDER BY id ASC', [eventId, 'SUBMITTED']);
       const submissions = subsRes.rows;
 
@@ -31,10 +35,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ eventId
         return NextResponse.json({ error: { code: 'INVALID_STATE', message: 'No submitted submissions found' } }, { status: 400 });
       }
 
-      // 2. Get all judges
+      // 3. Get all judges
       const judgeRes = await client.query('SELECT id, user_id FROM judge_profiles WHERE event_id = $1 ORDER BY id ASC', [eventId]);
       const judges = judgeRes.rows;
 
+      if (judges.length < requiredJudges) {
+        await client.query('ROLLBACK');
+        return NextResponse.json({ error: { code: 'INSUFFICIENT_JUDGES', message: 'Not enough judges configured for this event.' } }, { status: 400 });
+      }
+      
       if (judges.length < judgesPerSubmission) {
         await client.query('ROLLBACK');
         return NextResponse.json({ error: { code: 'INSUFFICIENT_JUDGES', message: 'Not enough judges to satisfy judgesPerSubmission' } }, { status: 400 });

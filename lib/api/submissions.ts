@@ -2,7 +2,7 @@ import { query } from '@/lib/db';
 import { Submission } from '@/lib/types';
 import { mockSubmissions } from './mockData';
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 export async function getSubmissionsByEvent(eventId: string): Promise<Submission[]> {
   if (USE_MOCK) return mockSubmissions.filter(s => s.event_id === eventId);
@@ -22,9 +22,10 @@ export async function getSubmissionById(id: string): Promise<Submission | null> 
   if (USE_MOCK) return mockSubmissions.find(s => s.id === id) || null;
   const result = await query(
     `SELECT s.id, s.team_id, s.event_id, s.title, s.description, s.url, s.status, s.created_at,
-            t.name as team_name, t.description as team_description
+            t.name as team_name, t.description as team_description, e.submission_end as event_submission_end
      FROM submissions s
      JOIN teams t ON t.id = s.team_id
+     JOIN events e ON e.id = s.event_id
      WHERE s.id = $1`,
     [id]
   );
@@ -105,5 +106,6 @@ function rowToSubmission(row: Record<string, unknown>): Submission {
           created_at: row.created_at as string,
         }
       : undefined,
+    event_submission_end: row.event_submission_end as string | undefined,
   };
 }

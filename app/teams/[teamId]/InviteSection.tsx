@@ -13,42 +13,31 @@ interface InviteSectionProps {
 export default function InviteSection({ teamId }: InviteSectionProps) {
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState('');
 
-  async function generateInviteLink() {
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+    
     setLoading(true);
     try {
       const res = await fetch(`/api/teams/${teamId}/invitations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Note: once auth is available, include the current userId
-        body: JSON.stringify({ invitedByUserId: '00000000-0000-0000-0000-000000000000' }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
       if (!res.ok) {
-        addToast(data.error ?? 'Failed to create invitation', 'error');
+        addToast(data.error?.message || 'Failed to send invitation', 'error');
         return;
       }
-      const url = `${window.location.origin}${data.data.inviteUrl}`;
-      setInviteLink(url);
-      addToast('Invitation link created! Share it with your teammate.', 'success');
+      addToast('Invitation sent successfully!', 'success');
+      setEmail('');
+      // Ideally, refresh pending invitations list here or rely on router.refresh() from parent
     } catch {
-      addToast('Failed to create invitation. Please try again.', 'error');
+      addToast('Failed to send invitation. Please try again.', 'error');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function copyToClipboard() {
-    if (!inviteLink) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      addToast('Invitation link copied to clipboard.', 'success');
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      addToast('Could not copy to clipboard.', 'error');
     }
   }
 
@@ -56,46 +45,30 @@ export default function InviteSection({ teamId }: InviteSectionProps) {
     <Card shadow padding="md">
       <h2 className={styles.sidebarTitle}>Invite a teammate</h2>
       <p className={styles.inviteDesc}>
-        Generate a secure invitation link and share it with anyone you want to add to this team.
+        Invite a registered participant to your team using their email address.
       </p>
 
-      {inviteLink ? (
-        <div className={styles.inviteLinkSection}>
-          <input
-            className={styles.inviteLinkInput}
-            value={inviteLink}
-            readOnly
-            aria-label="Invitation link"
-          />
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={copyToClipboard}
-          >
-            {copied ? '✓ Copied' : 'Copy link'}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setInviteLink(null); setCopied(false); }}
-          >
-            Generate new
-          </Button>
-        </div>
-      ) : (
+      <form onSubmit={handleInvite} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
+        <input
+          type="email"
+          placeholder="Participant's email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+          style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--color-border)', width: '100%', background: 'var(--color-surface)' }}
+        />
         <Button
+          type="submit"
           variant="secondary"
           size="sm"
           loading={loading}
-          onClick={generateInviteLink}
           fullWidth
         >
-          Generate invite link
+          Send Invite
         </Button>
-      )}
-
-      <p className={styles.inviteNote}>
-        Invitation links expire in 7 days and can only be used once.
+      </form>
+      <p className={styles.inviteNote} style={{ marginTop: '12px' }}>
+        The user must be registered for this event. Invitations expire in 48 hours.
       </p>
     </Card>
   );

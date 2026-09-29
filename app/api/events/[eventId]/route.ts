@@ -5,10 +5,38 @@ import { eventUpdateSchema } from '@/lib/validation/events';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ eventId: string }> }) {
   const eventId = (await params).eventId;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(eventId)) {
+    return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
+  }
   const pool = getDbPool();
   const res = await pool.query('SELECT * FROM events WHERE id = $1', [eventId]);
   if (res.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
-  return NextResponse.json({ event: res.rows[0] });
+  
+  const event = res.rows[0];
+
+  const metricsRes = await pool.query(`
+    SELECT
+      (SELECT COUNT(*) FROM event_members WHERE event_id = $1 AND role = 'PARTICIPANT') as participants_count,
+      (SELECT COUNT(*) FROM teams WHERE event_id = $1) as teams_count,
+      (SELECT COUNT(*) FROM team_members tm JOIN teams t ON tm.team_id = t.id WHERE t.event_id = $1) as team_members_count,
+      (SELECT COUNT(*) FROM submissions WHERE event_id = $1 AND status = 'DRAFT') as drafts_count,
+      (SELECT COUNT(*) FROM submissions WHERE event_id = $1 AND status = 'SUBMITTED') as submissions_count,
+      (SELECT COUNT(*) FROM event_members WHERE event_id = $1 AND role = 'JUDGE') as judges_count,
+      (SELECT COUNT(*) FROM judge_assignments ja JOIN submissions s ON ja.submission_id = s.id WHERE s.event_id = $1) as assignments_count
+  `, [eventId]);
+
+  const metrics = {
+    participants: parseInt(metricsRes.rows[0].participants_count),
+    teams: parseInt(metricsRes.rows[0].teams_count),
+    teamMembers: parseInt(metricsRes.rows[0].team_members_count),
+    drafts: parseInt(metricsRes.rows[0].drafts_count),
+    submissions: parseInt(metricsRes.rows[0].submissions_count),
+    judges: parseInt(metricsRes.rows[0].judges_count),
+    assignments: parseInt(metricsRes.rows[0].assignments_count),
+  };
+
+  return NextResponse.json({ event, metrics });
 }
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ eventId: string }> }) {
@@ -66,11 +94,6 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ event
   const eventRes = await pool.query('SELECT status FROM events WHERE id = $1', [eventId]);
   if (eventRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Event not found' } }, { status: 404 });
   
-  const currentStatus = eventRes.rows[0].status;
-  if (currentStatus !== 'DRAFT') {
-    return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: 'Only DRAFT events can be deleted. Use ARCHIVED status for progressed events.' } }, { status: 400 });
-  }
-
   await pool.query('DELETE FROM events WHERE id = $1', [eventId]);
   return NextResponse.json({ status: 'ok' });
 }

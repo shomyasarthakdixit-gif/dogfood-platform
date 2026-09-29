@@ -20,46 +20,49 @@ The platform operates as a self-hostable monolith on Next.js 16 (App Router) bac
 ## Technology Stack
 
 - **Framework**: Next.js (App Router), React, TypeScript
-- **Database**: PostgreSQL (Dockerized)
+- **Database**: PostgreSQL
 - **Validation**: Zod
 - **Testing**: Vitest (Unit/Integration), Playwright (E2E)
-- **Infrastructure**: Docker, Docker Compose
 
 ## Self-Hosting & Offline Model
-Dogfood Platform is strictly designed for local, private, and air-gapped environments if necessary. There are zero cloud dependencies. Authentication and database functions are completely self-contained within the platform.
+Dogfood Platform is strictly designed for local, private environments.
 
 ## Prerequisites
 
 - Node.js (v20+)
 - npm (v9+)
-- Docker and Docker Compose
-
-## Environment Configuration
-
-Copy the example environment file and configure it if needed:
-
-```bash
-cp .env.example .env
-```
-*(By default, `.env.example` works automatically with the local Docker Compose setup).*
+- An external PostgreSQL database (e.g. Neon)
 
 ## Local Development
 
-To run the full stack locally for development or demonstration:
+1. Install Node.js dependencies.
 
 ```bash
-docker compose up --build -d
+npm install
 ```
-The Next.js application will be available at [http://localhost:3000](http://localhost:3000).
 
-### What Happens on Startup?
-1. The **PostgreSQL** database spins up and waits to become healthy.
-2. The Web container automatically runs **migrations** to bring the schema up to date.
-3. **Seed Data** is automatically inserted deterministically so you have a working environment immediately.
+2. Create .env.
+
+The .env contains:
+```bash
+DATABASE_URL=
+```
+
+3. Manually paste the user's PostgreSQL connection string.
+
+4. Run:
+
+```bash
+npm run dev
+```
+
+5. Open:
+
+[http://localhost:3000](http://localhost:3000)
 
 ### Local Demo Credentials
 
-These credentials are for local/demo evaluation only. They are seeded automatically in the development database. They are **NOT** production credentials. Self-hosted production deployments should replace/remove them.
+These credentials are for local/demo evaluation only. They are seeded automatically in the development database (if you run the seed script). They are **NOT** production credentials. Self-hosted production deployments should replace/remove them.
 
 **Participant Account:**
 - Email: `participant1@dogfood.local`
@@ -72,13 +75,6 @@ These credentials are for local/demo evaluation only. They are seeded automatica
 **Judge Accounts:**
 - Email: `judge1@dogfood.local`, `judge2@dogfood.local`, `judge3@dogfood.local`
 - Password: `password123`
-
-### How to Reset the Local Database
-To completely wipe the database and start fresh:
-```bash
-docker compose down -v
-docker compose up --build -d
-```
 
 ## Basic Health-Check
 

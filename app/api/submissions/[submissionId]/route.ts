@@ -38,9 +38,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ submis
   if (subRes.rowCount === 0) return NextResponse.json({ error: { code: 'NOT_FOUND', message: 'Submission not found' } }, { status: 404 });
   const sub = subRes.rows[0];
 
-  if (sub.status !== 'DRAFT') {
-    return NextResponse.json({ error: { code: 'FORBIDDEN', message: 'Cannot edit a finalized submission' } }, { status: 403 });
-  }
+  // Removed DRAFT-only restriction so SUBMITTED can be edited before deadline
 
   const now = new Date();
   if (sub.event_status === 'DRAFT' || sub.event_status === 'ARCHIVED') {
