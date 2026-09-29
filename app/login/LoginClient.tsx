@@ -125,6 +125,17 @@ export default function LoginClient() {
                 Forgot Password? <span>Click Here</span>
               </Link>
             </div>
+
+            <div style={{ marginTop: '2rem', padding: '1rem', background: 'var(--color-surface-subtle)', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid var(--color-border)' }}>
+              <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--color-text)' }}>Demo Accounts (Password: demo123)</strong>
+              <ul style={{ listStyleType: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px', color: 'var(--color-text-muted)' }}>
+                <li><strong>Admin:</strong> admin@dogfood.local</li>
+                <li><strong>Judge 1:</strong> judge1@dogfood.local</li>
+                <li><strong>Judge 2:</strong> judge2@dogfood.local</li>
+                <li><strong>Participant 1:</strong> participant1@dogfood.local</li>
+                <li><strong>Participant 2:</strong> participant2@dogfood.local</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
