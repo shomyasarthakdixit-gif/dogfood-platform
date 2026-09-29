@@ -96,16 +96,18 @@ export default function JudgingEvaluationPage({ params }: { params: Promise<{ ev
         <p style={{ color: 'var(--color-text-muted)' }}>Assignment ID: {resolvedParams.assignmentId}</p>
       </div>
 
-      <Card padding="md" style={{ marginBottom: '2rem' }}>
-        <h2>{assignment.submission_title || 'Untitled Submission'}</h2>
-        {assignment.team_name && <p><strong>Team:</strong> {assignment.team_name}</p>}
-        {assignment.submission_url && <p><strong>URL:</strong> <a href={assignment.submission_url} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)' }}>{assignment.submission_url}</a></p>}
-        {assignment.submission_description && (
-          <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--color-surface-subtle)', borderRadius: '4px' }}>
-            <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{assignment.submission_description}</p>
-          </div>
-        )}
-      </Card>
+      <div style={{ marginBottom: '2rem' }}>
+        <Card padding="md">
+          <h2>{assignment.submission_title || 'Untitled Submission'}</h2>
+          {assignment.team_name && <p><strong>Team:</strong> {assignment.team_name}</p>}
+          {assignment.submission_url && <p><strong>URL:</strong> <a href={assignment.submission_url} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)' }}>{assignment.submission_url}</a></p>}
+          {assignment.submission_description && (
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'var(--color-surface-subtle)', borderRadius: '4px' }}>
+              <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{assignment.submission_description}</p>
+            </div>
+          )}
+        </Card>
+      </div>
 
       <Card padding="md">
         <h3 style={{ marginBottom: '1.5rem' }}>Rubric</h3>
