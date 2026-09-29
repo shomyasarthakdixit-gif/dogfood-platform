@@ -45,6 +45,58 @@ export async function POST(req: Request, { params }: { params: Promise<{ submiss
     return NextResponse.json({ error: { code: 'SUBMISSION_ALREADY_SUBMITTED', message: 'Submission already finalized or modified' } }, { status: 400 });
   }
 
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      const eventRes = await client.query('SELECT required_judges FROM events WHERE id = $1', [sub.event_id]);
+      const requiredJudges = eventRes.rows[0].required_judges;
+
+      const judgesRes = await client.query(`
+        SELECT jp.id, COUNT(ja.id) as load
+        FROM judge_profiles jp
+        LEFT JOIN judge_assignments ja ON jp.id = ja.judge_id
+        WHERE jp.event_id = $1
+        GROUP BY jp.id
+        ORDER BY load ASC, jp.id ASC
+      `, [sub.event_id]);
+      
+      const judges = judgesRes.rows;
+
+      const coiRes = await client.query(`
+        SELECT jp.id 
+        FROM judge_profiles jp
+        JOIN team_members tm ON jp.user_id = tm.user_id
+        WHERE jp.event_id = $1 AND tm.team_id = $2
+      `, [sub.event_id, sub.team_id]);
+      const coiJudges = new Set(coiRes.rows.map(r => r.id));
+
+      const eligibleJudges = judges.filter(j => !coiJudges.has(j.id));
+      const judgesToAssign = eligibleJudges.slice(0, requiredJudges);
+      
+      for (const j of judgesToAssign) {
+        const insRes = await client.query(
+          'INSERT INTO judge_assignments (judge_id, submission_id, status) VALUES ($1, $2, $3) RETURNING id',
+          [j.id, submissionId, 'PENDING']
+        );
+        await client.query(
+          'WITH dummy AS (SELECT $1::text) INSERT INTO audit_logs (user_id, action, entity_type, entity_id, details) VALUES ($2, $3, $4, $5, $6)',
+          [sub.event_id, user!.id, 'CREATE_ASSIGNMENT_AUTO', 'JUDGE_ASSIGNMENT', insRes.rows[0].id, JSON.stringify({ judge_id: j.id, submission_id: submissionId })]
+        );
+      }
+      
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error('Failed to auto-assign judges:', e);
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.error('Failed to connect for auto-assign:', e);
+  }
+
   await pool.query(`
     INSERT INTO audit_logs (user_id, action, entity_type, entity_id)
     VALUES ($1, $2, $3, $4)

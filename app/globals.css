@@ -11,6 +11,7 @@
   
   --color-secondary: #6366f1;
   --color-secondary-hover: #4f46e5;
+  --color-primary: var(--color-accent);
 
   --color-surface: #ffffff;
   --color-surface-subtle: #faf5ff;
@@ -126,6 +127,7 @@
   --color-accent: #a78bfa;
   --color-accent-hover: #c4b5fd;
   --color-accent-light: #4c1d95;
+  --color-primary: var(--color-accent);
   
   --color-success-bg: #064e3b;
   --color-success-fg: #34d399;
