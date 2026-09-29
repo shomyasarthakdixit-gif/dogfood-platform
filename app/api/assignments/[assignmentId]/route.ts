@@ -33,12 +33,38 @@ export async function GET(req: Request, { params }: { params: Promise<{ assignme
   }
 
   // Fetch criteria
-  const critRes = await pool.query(`
+  let critRes = await pool.query(`
     SELECT c.* 
     FROM rubric_criteria c
     JOIN rubrics r ON c.rubric_id = r.id
     WHERE r.event_id = $1
   `, [assignment.event_id]);
+
+  if (critRes.rowCount === 0) {
+    // Check if event has a rubric without criteria
+    const existingRubric = await pool.query('SELECT id FROM rubrics WHERE event_id = $1 LIMIT 1', [assignment.event_id]);
+    let rubricId;
+    if (existingRubric.rowCount && existingRubric.rowCount > 0) {
+      rubricId = existingRubric.rows[0].id;
+    } else {
+      const newRubric = await pool.query(
+        'INSERT INTO rubrics (event_id, name) VALUES ($1, $2) RETURNING id',
+        [assignment.event_id, 'Default Rubric']
+      );
+      rubricId = newRubric.rows[0].id;
+    }
+    await pool.query(
+      'INSERT INTO rubric_criteria (rubric_id, name, description, max_score, weight) VALUES ($1, $2, $3, $4, $5)',
+      [rubricId, 'Overall Score', 'General overall evaluation of the project.', 100, 1.0]
+    );
+    
+    critRes = await pool.query(`
+      SELECT c.* 
+      FROM rubric_criteria c
+      JOIN rubrics r ON c.rubric_id = r.id
+      WHERE r.event_id = $1
+    `, [assignment.event_id]);
+  }
 
   // Fetch evaluation and existing scores
   const evalRes = await pool.query('SELECT id, status FROM evaluations WHERE assignment_id = $1', [assignmentId]);

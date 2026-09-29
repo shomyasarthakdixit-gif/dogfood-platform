@@ -23,7 +23,7 @@ async function handleSaveOrSubmit(req: Request, params: Promise<{ assignmentId: 
     const body = await req.json();
     const result = submitEvaluationSchema.safeParse(body);
     if (!result.success) {
-      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: (result.error as unknown as { errors: { message: string }[] }).errors[0].message } }, { status: 400 });
+      return NextResponse.json({ error: { code: 'VALIDATION_ERROR', message: result.error.issues[0].message } }, { status: 400 });
     }
 
     const { scores, submit } = result.data;
